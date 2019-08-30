@@ -34,12 +34,13 @@ struct ValidateResult {
     description: &'static str
 }
 
-pub fn validate(path: web::Path<(String,)>) -> impl Responder {
-    // println!("{:?}", AUTH_KEY.encrypt(&mut rand::thread_rng(), PaddingScheme::PKCS1v15, 
-    //     &path.0.as_bytes()
-    // ));
-    let _user_id = &path.0;
-    
+pub fn validate(_session: Session) -> impl Responder {
+    // let a = AUTH_KEY.encrypt(&mut rand::thread_rng(), PaddingScheme::PKCS1v15, 
+    //     "huaji".as_bytes()
+    // ).unwrap();
+    // let b = AUTH_KEY.decrypt(PaddingScheme::PKCS1v15, &a).unwrap();
+    // println!("{:?}", b);
+    // decrypt password from request
     HttpResponse::Ok().json(ValidateResult {
         code: 0,
         description: "Login succeeded"
