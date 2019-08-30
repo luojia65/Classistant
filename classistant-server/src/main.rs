@@ -1,19 +1,15 @@
-use actix_session::{CookieSession, Session};
-use actix_web::{web, App, Error, HttpResponse, HttpServer};
+#[macro_use]
+extern crate lazy_static;
 
-fn auth_init(session: Session) -> Result<HttpResponse, Error> {
-    session.set("public-key", "Wow")?;
-    Ok(HttpResponse::Ok().body(format!(
-        "{}",
-        session.get::<String>("public-key")?.unwrap()
-    )))
-}
+use actix_web::{web, App, HttpServer};
+
+mod auth;
 
 fn main() {
     HttpServer::new(|| {
         App::new()
-            .wrap(CookieSession::signed(&[0; 32]).secure(false))
-            .route("/api/v1/auth/init", web::get().to(auth_init))
+            .route("/api/v1/auth/init", web::get().to(auth::init))
+            .route("/api/v1/auth/validate/{user_id}", web::get().to(auth::validate))
     })
     .bind("127.0.0.1:8000").expect("bind to port 8000")
     .run().expect("start server");
