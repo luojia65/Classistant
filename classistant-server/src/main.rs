@@ -23,6 +23,7 @@ fn main() {
         .get_matches();
     let api_bind_addr = matches.value_of("http-api").unwrap_or("127.0.0.1:8000");
     let mysql_addr: Vec<&str> = matches.values_of("mysql").unwrap().collect();
+    println!("Using mysql database {}:{}", mysql_addr[0], mysql_addr[1]);
     let db = db::connect(mysql_addr);
     HttpServer::new(move || {
         App::new()

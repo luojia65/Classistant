@@ -1,5 +1,5 @@
 use actix_session::Session;
-use actix_web::{web, Responder, HttpRequest, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Serialize, Deserialize};
 
 const ACTION_REGISTER_REQUEST: &str = "v1.auth.register.request";
@@ -18,14 +18,12 @@ pub struct RegisterResult {
     action: &'static str,
     #[serde(rename = "return")]
     return_id: u32,
-    #[serde(flatten)]
-    detailed: Detailed,
-}
-
-#[derive(Serialize)]
-pub enum Detailed {
-    Success { uid: String },
-    Failed { reason: String },
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "uid")]
+    success_uid: Option<u64>,
 }
 
 pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) -> HttpResponse {
@@ -36,6 +34,9 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
         Ok(r) => r,
         Err(_) => return register_failed(21, "failed to decode base64 hash"),    
     };
+    if info.nickname.len() == 0 {       
+        return register_failed(11, "empty nickname");
+    }
     let mut conn = match db.get_conn() {
         Ok(r) => r,
         Err(_) => return register_failed(30, "failed to get connection from database"),    
@@ -53,25 +54,26 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
         None => return register_failed(33, "unexpected end of return rows"),
         Some(Err(_)) => return register_failed(34, "failed to iterate over answer rows"),
     };
-    let return_id: String = match ans.get("return_id") {
+    let return_id: u64 = match ans.get("return_id") {
         Some(r) => r,
         None => return register_failed(35, "no `return_id` row returned"),
     };
-    if return_id != "0" {
-        if return_id == "1" {
+    if return_id != 0 {
+        if return_id == 1 {
             return register_failed(10, "user nickname already taken")
         } else {
             return register_failed(36, "invalid `return_id` value")
         }
     }
-    let uid: String = match ans.get("user_id") {
+    let uid: u64 = match ans.get("user_id") {
         Some(r) => r,
         None => return register_failed(37, "invalid `return_id` value")
     };
     HttpResponse::Ok().json(RegisterResult {
         action: ACTION_REGISTER_REPLY,
         return_id: 0,
-        detailed: Detailed::Success { uid }
+        failed_reason: None,
+        success_uid: Some(uid),
     })
 }
 
@@ -80,7 +82,8 @@ fn register_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
     HttpResponse::Ok().json(RegisterResult {
         action: ACTION_REGISTER_REPLY,
         return_id: id,
-        detailed: Detailed::Failed { reason: reason.into() }
+        failed_reason: Some(reason.into()),
+        success_uid: None,
     })
 }
 
