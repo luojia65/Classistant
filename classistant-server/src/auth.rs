@@ -28,22 +28,11 @@ pub enum Detailed {
 }
 
 pub fn register(info: web::Json<RegisterRequest>) -> impl Responder {
-    let resp = RegisterResult {
+    HttpResponse::Ok().json(RegisterResult {
         action: ACTION_REGISTER_REPLY,
         success: false,
         detailed: Detailed::Failed { reason: String::from("滑稽，滑稽") }
-    };
-    let ans = match serde_json::to_string(&resp) {
-        Ok(r) => r,
-        Err(e) => {
-            let e_string = format!("{}", e).escape_unicode().to_string();
-            format!("{{\"action\":{},\"success\":false,\"reason\":\"{}\"}}", 
-                ACTION_REGISTER_REPLY.escape_unicode().to_string(),
-                e_string
-            )
-        }
-    };
-    format!("{}", ans)
+    })
 }
 
 // #[derive(Serialize, Deserialize)]
