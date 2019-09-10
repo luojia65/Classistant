@@ -23,9 +23,10 @@ fn main() {
         .get_matches();
     let api_bind_addr = matches.value_of("http-api").unwrap_or("127.0.0.1:8000");
     let mysql_addr: Vec<&str> = matches.values_of("mysql").unwrap().collect();
-    let mut db = db::connect(mysql_addr);
-    HttpServer::new(|| {
+    let db = db::connect(mysql_addr);
+    HttpServer::new(move || {
         App::new()
+            .data(db.clone())
             .route("/api/{path}", web::get().to(|| HttpResponse::MethodNotAllowed().body("use POST")))
             .route("/api/v1.auth.register", web::post().to(auth::register))
     })

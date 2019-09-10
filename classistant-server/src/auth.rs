@@ -27,7 +27,11 @@ pub enum Detailed {
     Failed { reason: String },
 }
 
-pub fn register(info: web::Json<RegisterRequest>) -> impl Responder {
+pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) -> impl Responder {
+    let conn = db.get_conn().expect("get mysql pool connection");
+    // conn.prep_exec("
+    //     CALL PUserRegister()
+    // ", &[]);
     HttpResponse::Ok().json(RegisterResult {
         action: ACTION_REGISTER_REPLY,
         success: false,
