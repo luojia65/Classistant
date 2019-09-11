@@ -1,5 +1,4 @@
-use actix_session::Session;
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
 
 const ACTION_REGISTER_REQUEST: &str = "v1.auth.register.request";
@@ -37,6 +36,17 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
     if info.nickname.len() == 0 {       
         return register_failed(11, "empty nickname");
     }
+    let mut all_numbers = true;
+    for ch in info.nickname.chars() {
+        if !ch.is_digit(10) {
+            all_numbers = false;
+            break;
+        }
+    }
+    if all_numbers {
+        return register_failed(12, "invalid nickname");
+    }
+    let _ = info.locale; // 
     let mut conn = match db.get_conn() {
         Ok(r) => r,
         Err(_) => return register_failed(30, "failed to get connection from database"),    
@@ -86,16 +96,3 @@ fn register_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
         success_uid: None,
     })
 }
-
-// #[derive(Serialize, Deserialize)]
-// struct ValidateResult {
-//     code: u32,
-//     description: &'static str
-// }
-
-// pub fn validate(_session: Session) -> impl Responder {
-//     HttpResponse::Ok().json(ValidateResult {
-//         code: 0,
-//         description: "Login succeeded"
-//     })
-// }
