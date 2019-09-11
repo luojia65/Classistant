@@ -78,3 +78,11 @@ BEGIN
 		END IF;
 	END IF;
 END
+
+CREATE TABLE IF NOT EXISTS `DDataUser` (
+  `user_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `type_id` int(11) NOT NULL,
+  `data` blob NOT NULL,
+  PRIMARY KEY (`user_id`,`group_id`,`type_id`)
+);

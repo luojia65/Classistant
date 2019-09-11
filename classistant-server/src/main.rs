@@ -4,6 +4,7 @@ use std::thread;
 
 mod auth;
 mod db;
+mod user_data;
 
 fn main() {
     let matches = clap::App::new(clap::crate_name!())
