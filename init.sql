@@ -11,8 +11,7 @@ CREATE PROCEDURE `PUserRegister`(
 	IN `_hash` BLOB
 )
 BEGIN
-	DECLARE `_tmp_user_id` varchar(48);
-  DECLARE `_return_id` INT;
+	DECLARE `_tmp_user_id` VARCHAR(48);
     
 	SELECT `user_id` 
   INTO `_tmp_user_id`
@@ -22,8 +21,31 @@ BEGIN
     SELECT 1 as `return_id`; -- nickname already taken
 	ELSE
     INSERT INTO `DUserAuth` (`nickname`,`hash`) 
-    VALUES (`_nickname`,`hash`);
+    VALUES (`_nickname`,`_hash`);
     SELECT `user_id` INTO `_tmp_user_id` FROM `DUserAuth` WHERE `nickname` = `_nickname`;
     SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`; -- success
   END IF;
+END
+
+CREATE PROCEDURE `PUserLoginById`(
+	IN `_user_id` INT,
+	IN `_hash` BLOB
+)
+BEGIN
+	DECLARE `_tmp_nickname` VARCHAR(48);
+    DECLARE `_tmp_hash` BLOB;
+    
+	SELECT `nickname`, `hash`
+    INTO `_tmp_nickname`, `_tmp_hash`
+    FROM `DUserAuth` WHERE `user_id` = `_user_id`;
+	
+    IF `_tmp_nickname` IS NULL THEN 
+		SELECT 2 as `return_id`; -- user of this nickname not found
+	ELSE 
+		IF `_tmp_hash` != `_hash` THEN
+			SELECT 1 as `return_id`; -- wrong password
+		ELSE 
+			SELECT 0 as `return_id`, `_tmp_nickname` as `nickname`;
+		END IF;
+	END IF;
 END
