@@ -13,7 +13,7 @@ CREATE PROCEDURE `PUserRegister`(
 	IN `_hash` BLOB
 )
 BEGIN
-	DECLARE `_tmp_user_id` VARCHAR(48);
+	DECLARE `_tmp_user_id` INT;
     
 	SELECT `user_id` 
   INTO `_tmp_user_id`
