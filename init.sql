@@ -49,7 +49,7 @@ BEGIN
 		IF `_tmp_hash` != `_hash` THEN
 			SELECT 1 as `return_id`; -- wrong password
 		ELSE 
-			SELECT 0 as `return_id`, `_tmp_nickname` as `nickname`;
+			SELECT 0 as `return_id`, `_user_id` as `user_id`, `_tmp_nickname` as `nickname`;
 		END IF;
 	END IF;
 END
@@ -69,12 +69,12 @@ BEGIN
     FROM `DUserAuth` WHERE `nickname` = `_nickname`;
 	
     IF `_tmp_user_id` IS NULL THEN 
-		SELECT 2 as `return_id`; -- user of this nickname not found
+		SELECT 3 as `return_id`; -- user of this nickname not found
 	ELSE 
 		IF `_tmp_hash` != `_hash` THEN
 			SELECT 1 as `return_id`; -- wrong password
 		ELSE 
-			SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`;
+			SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`, `_nickname` as `nickname`;
 		END IF;
 	END IF;
 END
