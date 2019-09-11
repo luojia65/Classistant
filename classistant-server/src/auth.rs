@@ -134,8 +134,9 @@ pub fn login(db: web::Data<mysql::Pool>, info: web::Json<LoginRequest>) -> HttpR
         }
     }
     if all_numbers {
-        if let Err(_) = info.input.parse::<u64>() {
-            return login_failed(10, "invalid number user id")
+        match info.input.parse::<u64>() {
+            Err(_) | Ok(0) => return login_failed(10, "invalid number user id"),
+            _ => {}
         }
     }
     let hash = match base64::decode(&info.hash) {
