@@ -3,6 +3,8 @@ use serde::{Serialize, Deserialize};
 
 const ACTION_REGISTER_REQUEST: &str = "v1.auth.register.request";
 const ACTION_REGISTER_REPLY: &str = "v1.auth.register.reply";
+const ACTION_LOGIN_REQUEST: &str = "v1.auth.login.request";
+const ACTION_LOGIN_REPLY: &str = "v1.auth.login.reply";
 
 #[derive(Deserialize)]
 pub struct RegisterRequest {
@@ -13,7 +15,7 @@ pub struct RegisterRequest {
 }
 
 #[derive(Serialize)]
-pub struct RegisterResult {
+pub struct RegisterResponse {
     action: &'static str,
     #[serde(rename = "return")]
     return_id: u32,
@@ -79,7 +81,7 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
         Some(r) => r,
         None => return register_failed(37, "invalid `return_id` value")
     };
-    HttpResponse::Ok().json(RegisterResult {
+    HttpResponse::Ok().json(RegisterResponse {
         action: ACTION_REGISTER_REPLY,
         return_id: 0,
         failed_reason: None,
@@ -89,10 +91,39 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
 
 #[inline]
 fn register_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
-    HttpResponse::Ok().json(RegisterResult {
+    HttpResponse::Ok().json(RegisterResponse {
         action: ACTION_REGISTER_REPLY,
         return_id: id,
         failed_reason: Some(reason.into()),
         success_uid: None,
     })
 }
+
+#[derive(Deserialize)]
+pub struct LoginRequest {
+    action: String,
+    input: String,
+    hash: String,
+}
+
+#[derive(Serialize)]
+pub struct LoginResponse {
+    action: &'static str,
+    #[serde(rename = "return")]
+    return_id: u32,
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "uid")]
+    success_uid: Option<u64>,
+}
+
+pub fn login(db: web::Data<mysql::Pool>, info: web::Json<LoginRequest>) -> HttpResponse { 
+    HttpResponse::Ok().json(LoginResponse {
+        action: ACTION_LOGIN_REPLY,
+        return_id: 23333,
+        failed_reason: Some("unimplemented".to_string()),
+        success_uid: None,
+    })
+}   
