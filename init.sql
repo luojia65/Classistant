@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `DUserAuth` (
   PRIMARY KEY (`user_id`)
 );
 
-DROP PROCEDURE `PUserRegister`;
+DROP PROCEDURE IF EXISTS `PUserRegister`;
 
 CREATE PROCEDURE `PUserRegister`(
 	IN `_nickname` VARCHAR(48),
@@ -29,7 +29,7 @@ BEGIN
   END IF;
 END
 
-DROP PROCEDURE `PUserLoginById`;
+DROP PROCEDURE IF EXISTS `PUserLoginById`;
 
 CREATE PROCEDURE `PUserLoginById`(
 	IN `_user_id` INT,
@@ -54,7 +54,7 @@ BEGIN
 	END IF;
 END
 
-DROP PROCEDURE `PUserLoginByNickname`;
+DROP PROCEDURE IF EXISTS `PUserLoginByNickname`;
 
 CREATE PROCEDURE `PUserLoginByNickname`(
 	IN `_nickname` VARCHAR(48),
@@ -86,3 +86,17 @@ CREATE TABLE IF NOT EXISTS `DDataUser` (
   `data` blob NOT NULL,
   PRIMARY KEY (`user_id`,`group_id`,`type_id`)
 );
+
+DROP PROCEDURE IF EXISTS `PDataInsert`;
+
+CREATE PROCEDURE `PDataInsert`(
+	IN `_user_id` INT,
+    IN `_group_id` INT,
+    IN `_type_id` BINARY(16),
+	IN `_data` BLOB
+)
+BEGIN
+    INSERT INTO `DDataUser` (`user_id`,`group_id`,`type_id`,`data`)
+	VALUES (`_user_id`, `_group_id`,`_type_id`,`_data`)
+    ON DUPLICATE KEY UPDATE `data` = `_data`;
+END
