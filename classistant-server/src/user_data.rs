@@ -14,23 +14,36 @@ pub struct ModifyRequest {
 #[derive(Serialize)]
 pub struct ModifyReply {
     action: &'static str,
+    #[serde(rename = "return")]
     return_id: u32,
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
 }
 
 pub fn modify(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
     if info.action != ACTION_MODIFY_REQUEST {
-        return register_failed(20, "wrong action type");
+        return modify_failed(20, "wrong action type");
     }
+    let map = if let serde_json::Value::Object(map) = &info.data { 
+        map
+    } else {
+        return modify_failed(22, "invalid `data` field: object required");
+    };
     
+    // let value = match base64::decode(&info.hash) {
+    //     Ok(r) => r,
+    //     Err(_) => return login_failed(21, "failed to decode base64 value"),    
+    // };
     HttpResponse::Ok().json(&info.data)
 }
 
 #[inline]
-fn register_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
+fn modify_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
     HttpResponse::Ok().json(ModifyReply {
         action: ACTION_MODIFY_REPLY,
         return_id: id,
-        // failed_reason: Some(reason.into()),
+        failed_reason: Some(reason.into()),
         // success_uid: None,
     })
 }
