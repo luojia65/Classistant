@@ -40,7 +40,7 @@ pub fn modify(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> Htt
         Ok(r) => r,
         Err(_) => return modify_failed(30, "failed to get connection from database", state_map),    
     };
-    let mut stmt = match conn.prepare("PDataInsert(?, ?, ?, ?)") { 
+    let mut stmt = match conn.prepare("CALL PDataInsert(?, ?, ?, ?)") { 
         Ok(r) => r,
         Err(_) => return modify_failed(31, "failed to prepare statement", state_map),    
     };
