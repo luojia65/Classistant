@@ -61,12 +61,12 @@ pub fn modify(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> Htt
         };
         succeed.push(key.to_string());
     }
-
-    // let value = match base64::decode(&info.hash) {
-    //     Ok(r) => r,
-    //     Err(_) => return login_failed(21, "failed to decode base64 value"),    
-    // };
-    HttpResponse::Ok().json(&info.data)
+    HttpResponse::Ok().json(ModifyReply {
+        action: ACTION_MODIFY_REPLY,
+        return_id: 0,
+        failed_reason: None,
+        succeed
+    })
 }
 
 #[inline]
