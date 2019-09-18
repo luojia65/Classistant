@@ -87,16 +87,30 @@ CREATE TABLE IF NOT EXISTS `DDataUser` (
   PRIMARY KEY (`user_id`,`group_id`,`type_id`)
 );
 
-DROP PROCEDURE IF EXISTS `PDataInsert`;
+DROP PROCEDURE IF EXISTS `PDataUInsert`;
 
-CREATE PROCEDURE `PDataInsert`(
+CREATE PROCEDURE `PDataUInsert`(
 	IN `_user_id` INT,
     IN `_group_id` INT,
     IN `_type_id` BINARY(16),
 	IN `_data` BLOB
 )
 BEGIN
-    INSERT INTO `DDataUUser` (`user_id`,`group_id`,`type_id`,`data`)
+    INSERT INTO `DDataUser` (`user_id`,`group_id`,`type_id`,`data`)
 	VALUES (`_user_id`, `_group_id`,`_type_id`,`_data`)
     ON DUPLICATE KEY UPDATE `data` = `_data`;
+END
+
+DROP PROCEDURE IF EXISTS `PDataInsert`;
+
+CREATE PROCEDURE `PDataUGet`(
+	IN `_user_id` INT,
+    IN `_group_id` INT,
+    IN `_type_id` BINARY(16)
+)
+BEGIN
+    SELECT `data` FROM `DDataUser` 
+    WHERE `user_id` = `_user_id` AND
+		  `group_id` = `_group_id` AND
+          `type_id` = `_type_id`;
 END
