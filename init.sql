@@ -96,7 +96,7 @@ CREATE PROCEDURE `PDataInsert`(
 	IN `_data` BLOB
 )
 BEGIN
-    INSERT INTO `DDataUser` (`user_id`,`group_id`,`type_id`,`data`)
+    INSERT INTO `DDataUUser` (`user_id`,`group_id`,`type_id`,`data`)
 	VALUES (`_user_id`, `_group_id`,`_type_id`,`_data`)
     ON DUPLICATE KEY UPDATE `data` = `_data`;
 END
