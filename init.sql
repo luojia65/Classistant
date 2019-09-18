@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS `DDataUser` (
   `group_id` int(11) NOT NULL,
   `type_id` binary(16) NOT NULL,
   `data` blob NOT NULL,
+  `date_modify` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`,`group_id`,`type_id`)
 );
 
