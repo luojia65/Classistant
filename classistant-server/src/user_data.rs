@@ -156,7 +156,7 @@ pub fn get(db: web::Data<mysql::Pool>, info: web::Json<GetRequest>) -> HttpRespo
         data_map.insert(key.to_string(), serde_json::Value::String(value));
     }
     HttpResponse::Ok().json(GetReply {
-        action: ACTION_MODIFY_REPLY,
+        action: ACTION_GET_REPLY,
         return_id: 0,
         failed_reason: None,
         success_data: serde_json::Value::Object(data_map),
@@ -166,7 +166,7 @@ pub fn get(db: web::Data<mysql::Pool>, info: web::Json<GetRequest>) -> HttpRespo
 #[inline]
 fn get_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
     HttpResponse::Ok().json(GetReply {
-        action: ACTION_MODIFY_REPLY,
+        action: ACTION_GET_REPLY,
         return_id: id,
         failed_reason: Some(reason.into()),
         success_data: serde_json::Value::Null,
