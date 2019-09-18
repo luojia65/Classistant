@@ -89,3 +89,6 @@ fn modify_failed<T: Into<String>>(
     })
 }
 
+pub fn get(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
+    HttpResponse::Ok().json(None::<u8>)
+}

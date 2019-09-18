@@ -38,6 +38,7 @@ fn main() {
                 .route("/api/v1.auth.register", web::post().to(auth::register))
                 .route("/api/v1.auth.login", web::post().to(auth::login))
                 .route("/api/v1.user-data.modify", web::post().to(user_data::modify))
+                .route("/api/v1.user-data.get", web::post().to(user_data::get))
         })
         .bind(api_bind_addr).expect("bind API server")
         .run().expect("run API server");
