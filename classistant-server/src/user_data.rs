@@ -145,7 +145,10 @@ pub fn get(db: web::Data<mysql::Pool>, info: web::Json<GetRequest>) -> HttpRespo
         };
         let ans = match ans_iter.next() {
             Some(Ok(r)) => r,
-            None => return get_failed(33, "unexpected end of return rows"),
+            None => {
+                data_map.insert(key.to_string(), serde_json::Value::Null);
+                continue
+            },
             Some(Err(_)) => return get_failed(34, "failed to iterate over answer rows"),
         };
         let value: Vec<u8> = match ans.get("data") {
