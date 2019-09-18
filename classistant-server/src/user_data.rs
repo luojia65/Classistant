@@ -3,6 +3,8 @@ use serde::{Serialize, Deserialize};
 
 const ACTION_MODIFY_REQUEST: &str = "v1.user-data.modify.request";
 const ACTION_MODIFY_REPLY: &str = "v1.user-data.modify.reply";
+const ACTION_GET_REQUEST: &str = "v1.user-data.get.request";
+const ACTION_GET_REPLY: &str = "v1.user-data.get.reply";
 
 #[derive(Deserialize)]
 pub struct ModifyRequest {
@@ -88,7 +90,85 @@ fn modify_failed<T: Into<String>>(
         state: serde_json::Value::Object(state_map)
     })
 }
+#[derive(Deserialize)]
+pub struct GetRequest {
+    action: String,
+    uid: u64,
+    gid: u64,
+    keys: serde_json::Value,
+}
 
-pub fn get(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
-    HttpResponse::Ok().json(None::<u8>)
+#[derive(Serialize)]
+pub struct GetReply {
+    action: &'static str,
+    #[serde(rename = "return")]
+    return_id: u32,
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
+    #[serde(rename = "data")]
+    #[serde(skip_serializing_if = "serde_json::Value::is_null")]
+    success_data: serde_json::Value,
+}
+
+pub fn get(db: web::Data<mysql::Pool>, info: web::Json<GetRequest>) -> HttpResponse {
+    let mut data_map = serde_json::Map::new();
+    if info.action != ACTION_GET_REQUEST {
+        return get_failed(20, "wrong action type");
+    }
+    if info.uid == 0 {
+        return get_failed(10, "invalid `uid`: cannot be zero");
+    }
+    let array = if let serde_json::Value::Array(array) = &info.keys { 
+        array
+    } else {
+        return get_failed(22, "invalid `keys` field: array required");
+    };
+    let mut conn = match db.get_conn() {
+        Ok(r) => r,
+        Err(_) => return get_failed(30, "failed to get connection from database"),    
+    };
+    let mut stmt = match conn.prepare("CALL PDataUGet(?, ?, ?)") { 
+        Ok(r) => r,
+        Err(_) => return get_failed(31, "failed to prepare statement"),    
+    };
+    for key in array.iter() {
+        let key = if let serde_json::Value::String(s) = key { 
+            s 
+        } else { 
+            return get_failed(23, "element in array `keys` must be strings"); 
+        };
+        let type_id: [u8; 16] = md5::compute(key).into();
+        let mut ans_iter = match stmt.execute((info.uid, info.gid, &type_id)) {
+            Ok(r) => r,
+            Err(_) => return get_failed(32, "failed to execute statement"),    
+        };
+        let ans = match ans_iter.next() {
+            Some(Ok(r)) => r,
+            None => return get_failed(33, "unexpected end of return rows"),
+            Some(Err(_)) => return get_failed(34, "failed to iterate over answer rows"),
+        };
+        let value: Vec<u8> = match ans.get("data") {
+            Some(r) => r,
+            None => return get_failed(35, "no `data` row returned"),
+        };
+        let value = base64::encode(&value);
+        data_map.insert(key.to_string(), serde_json::Value::String(value));
+    }
+    HttpResponse::Ok().json(GetReply {
+        action: ACTION_MODIFY_REPLY,
+        return_id: 0,
+        failed_reason: None,
+        success_data: serde_json::Value::Object(data_map),
+    })
+}
+
+#[inline]
+fn get_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
+    HttpResponse::Ok().json(GetReply {
+        action: ACTION_MODIFY_REPLY,
+        return_id: id,
+        failed_reason: Some(reason.into()),
+        success_data: serde_json::Value::Null,
+    })
 }
