@@ -38,8 +38,25 @@ pub fn create(db: web::Data<mysql::Pool>, info: web::Json<CreateRequest>) -> Htt
         Ok(r) => r,
         Err(_) => return create_failed(31, "failed to prepare statement"),    
     };
-    
-    unimplemented!()
+    let mut ans_iter = match stmt.execute((&info.owner_uid,)) {
+        Ok(r) => r,
+        Err(_) => return create_failed(32, "failed to execute statement"),    
+    };
+    let ans = match ans_iter.next() {
+        Some(Ok(r)) => r,
+        None => return create_failed(33, "unexpected end of return rows"),
+        Some(Err(_)) => return create_failed(34, "failed to iterate over answer rows"),
+    };
+    let group_id: u64 = match ans.get("group_id") {
+        Some(r) => r,
+        None => return create_failed(35, "no `group_id` row returned"),
+    };
+    HttpResponse::Ok().json(CreateResponse {
+        action: ACTION_CREATE_REPLY,
+        return_id: 0,
+        failed_reason: None,
+        success_gid: Some(group_id),
+    })
 }
 
 #[inline]
@@ -51,3 +68,9 @@ fn create_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
         success_gid: None,
     })
 }
+
+// #[derive(Deserialize)]
+// pub struct AlterRequest {
+//     action: String,
+//     gid: u64,
+// }
