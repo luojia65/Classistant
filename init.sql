@@ -120,7 +120,7 @@ END
 CREATE TABLE `DGroupMember` (
   `group_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(45) NOT NULL,
-  `priv` varchar(45) NOT NULL,
+  `priv` int(11) NOT NULL,
   `date_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_expired` datetime DEFAULT NULL,
