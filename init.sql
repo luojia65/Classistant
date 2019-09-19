@@ -93,8 +93,8 @@ DROP PROCEDURE IF EXISTS `PDataUInsert`;
 
 CREATE PROCEDURE `PDataUInsert`(
 	IN `_user_id` INT,
-    IN `_group_id` INT,
-    IN `_type_id` BINARY(16),
+  IN `_group_id` INT,
+  IN `_type_id` BINARY(16),
 	IN `_data` BLOB
 )
 BEGIN
@@ -142,12 +142,12 @@ DROP PROCEDURE IF EXISTS `PGroupMemberModify`;
 
 CREATE PROCEDURE `PGroupMemberModify`(
 	`_group_id` INT,
-  `_new_user_id` INT,
+  `_user_id` INT,
   `_new_priv` INT
 )
 BEGIN
 	INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-	VALUES (`_group_id`,`_new_user_id`, `_new_priv`)
+	VALUES (`_group_id`,`_user_id`, `_new_priv`)
   ON DUPLICATE KEY UPDATE `priv` = `_new_priv`, `date_expired` = NULL;
 END
 
@@ -161,4 +161,24 @@ BEGIN
 	UPDATE `DGroupMember` 
     SET `date_expired` = CURRENT_TIMESTAMP()
     WHERE `group_id` = `_group_id` AND `user_id` = `_user_id`;
+END
+
+DROP PROCEDURE IF EXISTS `PGroupPrivAtomic`;
+
+CREATE PROCEDURE `PGroupPrivAtomic`(
+	`_group_id` INT,
+  `_user_id_1` INT,
+  `_user_id_2` INT,
+  `_new_priv_1` INT,
+  `_new_priv_2` INT
+)
+BEGIN
+	START TRANSACTION;
+		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
+		VALUES (`_group_id`,`_user_id_1`, `_new_priv_1`)
+		ON DUPLICATE KEY UPDATE `priv` = `_new_priv_1`, `date_expired` = NULL;
+		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
+		VALUES (`_group_id`,`_user_id_2`, `_new_priv_2`)
+		ON DUPLICATE KEY UPDATE `priv` = `_new_priv_2`, `date_expired` = NULL;
+  COMMIT;
 END
