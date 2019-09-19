@@ -146,5 +146,6 @@ CREATE PROCEDURE `PGroupMemberAdd`(
 )
 BEGIN
 	INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-	VALUES (`_group_id`,`_new_user_id`, 0);
+	VALUES (`_group_id`,`_new_user_id`, 0)
+  ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL;
 END
