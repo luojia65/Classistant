@@ -132,7 +132,18 @@ CREATE PROCEDURE `PGroupCreate`(
 	`_creator_user_id` INT
 )
 BEGIN
-	INSERT INTO `cla2019`.`dgroupmember` (`user_id`,`priv`)
+	INSERT INTO `DGroupMember` (`user_id`,`priv`)
 	VALUES (`_creator_user_id`, 2);
 	SELECT last_insert_id() as `group_id`;
+END
+
+DROP PROCEDURE IF EXISTS `PGroupMemberAdd`;
+
+CREATE PROCEDURE `PGroupMemberAdd`(
+	`_group_id` INT,
+  `_new_user_id` INT
+)
+BEGIN
+	INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
+	VALUES (`_group_id`,`_new_user_id`, 0);
 END
