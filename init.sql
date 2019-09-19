@@ -138,16 +138,17 @@ BEGIN
 	SELECT last_insert_id() as `group_id`;
 END
 
-DROP PROCEDURE IF EXISTS `PGroupMemberAdd`;
+DROP PROCEDURE IF EXISTS `PGroupMemberModify`;
 
-CREATE PROCEDURE `PGroupMemberAdd`(
+CREATE PROCEDURE `PGroupMemberModify`(
 	`_group_id` INT,
-  `_new_user_id` INT
+  `_new_user_id` INT,
+  `_new_priv` INT
 )
 BEGIN
 	INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-	VALUES (`_group_id`,`_new_user_id`, 0)
-  ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL;
+	VALUES (`_group_id`,`_new_user_id`, `_new_priv`)
+  ON DUPLICATE KEY UPDATE `priv` = `_new_priv`, `date_expired` = NULL;
 END
 
 DROP PROCEDURE IF EXISTS `PGroupMemberRemove`;
