@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS `DDataUser` (
   `type_id` binary(16) NOT NULL,
   `data` blob NOT NULL,
   `date_modify` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`,`group_id`,`type_id`)
 );
 
@@ -115,3 +116,12 @@ BEGIN
 		  `group_id` = `_group_id` AND
           `type_id` = `_type_id`;
 END
+
+CREATE TABLE `DGroupMember` (
+  `group_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(45) NOT NULL,
+  `priv` varchar(45) NOT NULL,
+  `date_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`group_id`,`user_id`)
+);
