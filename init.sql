@@ -123,6 +123,7 @@ CREATE TABLE `DGroupMember` (
   `priv` varchar(45) NOT NULL,
   `date_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `date_expired` datetime DEFAULT NULL,
   PRIMARY KEY (`group_id`,`user_id`)
 );
 
