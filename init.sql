@@ -125,3 +125,14 @@ CREATE TABLE `DGroupMember` (
   `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`group_id`,`user_id`)
 );
+
+DROP PROCEDURE IF EXISTS `PGroupCreate`;
+
+CREATE PROCEDURE `PGroupCreate`(
+	`_creator_user_id` INT
+)
+BEGIN
+	INSERT INTO `cla2019`.`dgroupmember` (`user_id`,`priv`)
+	VALUES (`_creator_user_id`, 2);
+	SELECT last_insert_id() as `group_id`;
+END
