@@ -149,3 +149,15 @@ BEGIN
 	VALUES (`_group_id`,`_new_user_id`, 0)
   ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL;
 END
+
+DROP PROCEDURE IF EXISTS `PGroupMemberRemove`;
+
+CREATE  PROCEDURE `PGroupMemberRemove`(
+	`_group_id` INT,
+  `_user_id` INT
+)
+BEGIN
+	UPDATE `DGroupMember` 
+    SET `date_expired` = CURRENT_TIMESTAMP()
+    WHERE `group_id` = `_group_id` AND `user_id` = `_user_id`;
+END
