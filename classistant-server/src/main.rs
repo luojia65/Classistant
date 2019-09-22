@@ -69,5 +69,7 @@ fn main() {
         .run().expect("run API server");
     });
     println!("Successfully launched Classistant-Server!");
-    loop {}
+    loop {
+        // todo: there should be a console command line process
+    }
 }

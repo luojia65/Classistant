@@ -126,13 +126,26 @@ pub struct GetReply {
     success_data: serde_json::Value,
 }
 
-pub fn get(db: web::Data<mysql::Pool>, info: web::Json<GetRequest>) -> HttpResponse {
+pub fn get(id: Identity, db: web::Data<mysql::Pool>, info: web::Json<GetRequest>) -> HttpResponse {
     let mut data_map = serde_json::Map::new();
     if info.action != ACTION_GET_REQUEST {
         return get_failed(20, "wrong action type");
     }
     if info.uid == 0 {
         return get_failed(10, "invalid `uid`: cannot be zero");
+    }
+    let id = match id.identity() {
+        Some(id) => match IdentityInner::from_json_str(&id) {
+            Ok(id) => id,
+            _ => return get_failed(40, "illegal identity"),
+        },
+        _ => return get_failed(41, "no identity exist"),
+    };
+    if id.uid() != info.uid {
+        return get_failed(42, "permission denied");
+    }
+    if id.is_expired() {
+        return get_failed(43, "identity expired");
     }
     let array = if let serde_json::Value::Array(array) = &info.keys { 
         array

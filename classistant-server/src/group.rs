@@ -1,5 +1,7 @@
 use actix_web::{web, HttpResponse};
+use actix_identity::Identity;
 use serde::{Serialize, Deserialize};
+use crate::identity::IdentityInner;
 
 const ACTION_CREATE_REQUEST: &str = "v1.group.create.request";
 const ACTION_CREATE_REPLY: &str = "v1.group.create.reply";
@@ -27,12 +29,25 @@ pub struct CreateResponse {
     success_gid: Option<u64>,
 }
 
-pub fn create(db: web::Data<mysql::Pool>, info: web::Json<CreateRequest>) -> HttpResponse {
+pub fn create(id: Identity, db: web::Data<mysql::Pool>, info: web::Json<CreateRequest>) -> HttpResponse {
     if info.action != ACTION_CREATE_REQUEST {
         return create_failed(20, "wrong action type");
     }
     if info.owner_uid == 0 {
         return create_failed(10, "owner's user id cannot be zero");
+    }
+    let id = match id.identity() {
+        Some(id) => match IdentityInner::from_json_str(&id) {
+            Ok(id) => id,
+            _ => return create_failed(40, "illegal identity"),
+        },
+        _ => return create_failed(41, "no identity exist"),
+    };
+    if id.uid() != info.owner_uid {
+        return create_failed(42, "permission denied");
+    }
+    if id.is_expired() {
+        return create_failed(43, "identity expired");
     }
     let mut conn = match db.get_conn() {
         Ok(r) => r,
@@ -94,7 +109,11 @@ pub struct ModifyResponse {
     success_state: Option<i32>, 
 }
 
-pub fn modify_member(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
+pub fn modify_member(
+    id: Identity, 
+    db: web::Data<mysql::Pool>, 
+    info: web::Json<ModifyRequest>
+) -> HttpResponse {
     if info.action != ACTION_MODIFY_REQUEST {
         return modify_failed(20, "wrong action type");
     }
