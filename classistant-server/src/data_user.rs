@@ -1,5 +1,7 @@
 use actix_web::{web, HttpResponse};
+use actix_identity::Identity;
 use serde::{Serialize, Deserialize};
+use crate::identity::IdentityInner;
 
 const ACTION_MODIFY_REQUEST: &str = "v1.user-data.modify.request";
 const ACTION_MODIFY_REPLY: &str = "v1.user-data.modify.reply";
@@ -25,13 +27,26 @@ pub struct ModifyReply {
     state: serde_json::Value,
 }
 
-pub fn modify(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
+pub fn modify(id: Identity, db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
     let mut state_map = serde_json::Map::new();
     if info.action != ACTION_MODIFY_REQUEST {
         return modify_failed(20, "wrong action type", state_map);
     }
     if info.uid == 0 {
         return modify_failed(10, "invalid `uid`: cannot be zero", state_map);
+    }
+    let id = match id.identity() {
+        Some(id) => match IdentityInner::from_json_str(&id) {
+            Ok(id) => id,
+            _ => return modify_failed(40, "illegal identity", state_map),
+        },
+        _ => return modify_failed(41, "no identity exist", state_map),
+    };
+    if id.uid() != info.uid {
+        return modify_failed(42, "permission denied", state_map);
+    }
+    if id.is_expired() {
+        return modify_failed(43, "identity expired", state_map);
     }
     let map = if let serde_json::Value::Object(map) = &info.data { 
         map

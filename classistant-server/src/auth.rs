@@ -1,5 +1,9 @@
 use actix_web::{web, HttpResponse};
+use actix_identity::Identity;
 use serde::{Serialize, Deserialize};
+use crate::site_config::SiteConfig;
+use crate::identity::IdentityInner;
+use std::sync::Arc;
 
 const ACTION_REGISTER_REQUEST: &str = "v1.auth.register.request";
 const ACTION_REGISTER_REPLY: &str = "v1.auth.register.reply";
@@ -104,6 +108,8 @@ pub struct LoginRequest {
     action: String,
     input: String,
     hash: String,
+    #[serde(rename = "alive-secs")]
+    alive_secs: u64,
 }
 
 #[derive(Serialize)]
@@ -122,7 +128,12 @@ pub struct LoginResponse {
     success_nickname: Option<String>,
 }
 
-pub fn login(db: web::Data<mysql::Pool>, info: web::Json<LoginRequest>) -> HttpResponse { 
+pub fn login(
+    id: Identity, 
+    cfg: web::Data<Arc<SiteConfig>>, 
+    db: web::Data<mysql::Pool>,
+    info: web::Json<LoginRequest>
+) -> HttpResponse { 
     if info.action != ACTION_LOGIN_REQUEST {
         return login_failed(20, "wrong action type");
     }
@@ -143,6 +154,9 @@ pub fn login(db: web::Data<mysql::Pool>, info: web::Json<LoginRequest>) -> HttpR
         Ok(r) => r,
         Err(_) => return login_failed(21, "failed to decode base64 hash"),    
     };
+    if info.alive_secs > cfg.max_alive_secs {
+        return login_failed(22, "max alive seconds excceeds site config limit")
+    }
     let mut conn = match db.get_conn() {
         Ok(r) => r,
         Err(_) => return login_failed(30, "failed to get connection from database"),    
@@ -184,6 +198,8 @@ pub fn login(db: web::Data<mysql::Pool>, info: web::Json<LoginRequest>) -> HttpR
         Some(r) => r,
         None => return register_failed(38, "invalid `nickname` value")
     };
+    let id_inner = IdentityInner::new_uid(user_id, info.alive_secs);
+    id.remember(id_inner.to_json_string().unwrap());
     HttpResponse::Ok().json(LoginResponse {
         action: ACTION_LOGIN_REPLY,
         return_id: 0,
