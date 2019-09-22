@@ -140,7 +140,7 @@ END
 
 DROP PROCEDURE IF EXISTS `PGroupMemberModify`;
 
-CREATE  PROCEDURE `PGroupMemberModify`(
+CREATE PROCEDURE `PGroupMemberModify`(
 	`_group_id` INT,
   `_user_id` INT,
   `_new_priv` INT,
@@ -151,7 +151,9 @@ BEGIN
   SELECT `priv` INTO `op_priv`
   FROM `DGroupMember`
   WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
-  IF (`op_priv` != 1 AND `op_priv` != 2) OR `_new_priv` = 2 THEN 
+  IF (`op_priv` = 1 AND `_new_priv` != 0) OR 
+		(`op_priv` != 1 AND `op_priv` != 2) 
+	THEN 
 		SELECT 1 as `return_id`; -- permission denied
 	ELSE 
 		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
@@ -183,22 +185,29 @@ BEGIN
 	END IF;
 END
 
-DROP PROCEDURE IF EXISTS `PGroupPrivAtomic`;
+DROP PROCEDURE IF EXISTS `PGroupTransferOwner`;
 
-CREATE PROCEDURE `PGroupPrivAtomic`(
+CREATE PROCEDURE `PGroupTransferOwner`(
 	`_group_id` INT,
-  `_user_id_1` INT,
-  `_user_id_2` INT,
-  `_new_priv_1` INT,
-  `_new_priv_2` INT
+  `_user_id_src` INT,
+  `_user_id_dst` INT
 )
 BEGIN
-	START TRANSACTION;
+	DECLARE `op_priv` INT DEFAULT 0;
+  SELECT `priv` INTO `op_priv`
+  FROM `DGroupMember`
+  WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
+  IF `op_priv` != 2 THEN
+	  SELECT 1 AS `return_id`; -- permission denied
+	ELSE
+	  START TRANSACTION;
 		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-		VALUES (`_group_id`,`_user_id_1`, `_new_priv_1`)
-		ON DUPLICATE KEY UPDATE `priv` = `_new_priv_1`, `date_expired` = NULL;
+		VALUES (`_group_id`,`_user_id_src`, 0)
+		ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL;
 		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-		VALUES (`_group_id`,`_user_id_2`, `_new_priv_2`)
-		ON DUPLICATE KEY UPDATE `priv` = `_new_priv_2`, `date_expired` = NULL;
-  COMMIT;
+		VALUES (`_group_id`,`_user_id_dst`, 2)
+		ON DUPLICATE KEY UPDATE `priv` = 2, `date_expired` = NULL;
+    COMMIT;
+	  SELECT 0 AS `return_id`; -- success
+  END IF;
 END

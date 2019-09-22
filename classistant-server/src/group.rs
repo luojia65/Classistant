@@ -242,11 +242,11 @@ pub fn remove_member(
         Ok(r) => r,
         Err(_) => return remove_failed(30, "failed to get connection from database"),    
     };
-    let mut stmt = match conn.prepare("CALL PGroupMemberRemove(?, ?)") {
+    let mut stmt = match conn.prepare("CALL PGroupMemberRemove(?, ?, ?)") {
         Ok(r) => r,
         Err(_) => return remove_failed(31, "failed to prepare statement"),    
     };
-    let mut ans_iter = match stmt.execute((info.gid, info.uid)) {
+    let mut ans_iter = match stmt.execute((info.gid, info.uid, info.operator_uid)) {
         Ok(r) => r,
         Err(_) => return remove_failed(32, "failed to execute statement"),    
     };
