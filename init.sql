@@ -158,7 +158,8 @@ BEGIN
 	ELSE 
 		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
 		VALUES (`_group_id`,`_user_id`, `_new_priv`)
-		ON DUPLICATE KEY UPDATE `priv` = `_new_priv`, `date_expired` = NULL;
+		ON DUPLICATE KEY UPDATE `priv` = `_new_priv`, `date_expired` = NULL, 
+			`date_modified` = CURRENT_TIMESTAMP();
 		SELECT 0 as `return_id`; -- success
   END IF;
 END
@@ -203,10 +204,12 @@ BEGIN
 	  START TRANSACTION;
 		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
 		VALUES (`_group_id`,`_user_id_src`, 0)
-		ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL;
+		ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL, 
+			`date_modified` = CURRENT_TIMESTAMP();
 		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
 		VALUES (`_group_id`,`_user_id_dst`, 2)
-		ON DUPLICATE KEY UPDATE `priv` = 2, `date_expired` = NULL;
+		ON DUPLICATE KEY UPDATE `priv` = 2, `date_expired` = NULL, 
+			`date_modified` = CURRENT_TIMESTAMP();
     COMMIT;
 	  SELECT 0 AS `return_id`; -- success
   END IF;
