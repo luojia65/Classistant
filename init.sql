@@ -163,14 +163,24 @@ END
 
 DROP PROCEDURE IF EXISTS `PGroupMemberRemove`;
 
-CREATE  PROCEDURE `PGroupMemberRemove`(
+CREATE PROCEDURE `PGroupMemberRemove`(
 	`_group_id` INT,
-  `_user_id` INT
+  `_user_id` INT,
+  `_operator_user_id` INT
 )
 BEGIN
-	UPDATE `DGroupMember` 
-    SET `date_expired` = CURRENT_TIMESTAMP()
-    WHERE `group_id` = `_group_id` AND `user_id` = `_user_id`;
+	DECLARE `op_priv` INT DEFAULT 0;
+  SELECT `priv` INTO `op_priv`
+  FROM `DGroupMember`
+  WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
+  IF `op_priv` != 1 AND `op_priv` != 2 THEN 
+		SELECT 1 as `return_id`; -- permission denied
+	ELSE 
+		UPDATE `DGroupMember` 
+		SET `date_expired` = CURRENT_TIMESTAMP()
+		WHERE `group_id` = `_group_id` AND `user_id` = `_user_id`;
+		SELECT 0 as `return_id`; -- success
+	END IF;
 END
 
 DROP PROCEDURE IF EXISTS `PGroupPrivAtomic`;

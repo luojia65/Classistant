@@ -193,6 +193,7 @@ fn modify_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
 #[derive(Deserialize)]
 pub struct RemoveRequest {
     action: String,
+    operator_uid: u64,
     gid: u64,
     uid: u64,
 }
@@ -210,8 +211,11 @@ pub struct RemoveResponse {
     success_state: Option<i32>, 
 }
 
-
-pub fn remove_member(db: web::Data<mysql::Pool>, info: web::Json<RemoveRequest>) -> HttpResponse {
+pub fn remove_member(
+    id: Identity, 
+    db: web::Data<mysql::Pool>, 
+    info: web::Json<RemoveRequest>
+) -> HttpResponse {
     if info.action != ACTION_REMOVE_REQUEST {
         return remove_failed(20, "wrong action type");
     }
@@ -221,6 +225,19 @@ pub fn remove_member(db: web::Data<mysql::Pool>, info: web::Json<RemoveRequest>)
     if info.gid == 0 {
         return remove_failed(11, "zero gid");
     }
+    let id = match id.identity() {
+        Some(id) => match IdentityInner::from_json_str(&id) {
+            Ok(id) => id,
+            _ => return create_failed(40, "illegal identity"),
+        },
+        _ => return create_failed(41, "no identity exist"),
+    };
+    if id.uid() != info.operator_uid {
+        return create_failed(42, "permission denied");
+    }
+    if id.is_expired() {
+        return create_failed(43, "identity expired");
+    }
     let mut conn = match db.get_conn() {
         Ok(r) => r,
         Err(_) => return remove_failed(30, "failed to get connection from database"),    
@@ -229,11 +246,25 @@ pub fn remove_member(db: web::Data<mysql::Pool>, info: web::Json<RemoveRequest>)
         Ok(r) => r,
         Err(_) => return remove_failed(31, "failed to prepare statement"),    
     };
-    let result = match stmt.execute((info.gid, info.uid)) {
+    let mut ans_iter = match stmt.execute((info.gid, info.uid)) {
         Ok(r) => r,
         Err(_) => return remove_failed(32, "failed to execute statement"),    
     };
-    let state = match result.affected_rows() {
+    let ans = match ans_iter.next() {
+        Some(Ok(r)) => r,
+        None => return modify_failed(33, "unexpected end of return rows"),
+        Some(Err(_)) => return modify_failed(34, "failed to iterate over answer rows"),
+    };
+    let return_id: u64 = match ans.get("return_id") {
+        Some(r) => r,
+        None => return modify_failed(35, "no `return_id` row returned"),
+    };
+    match return_id {
+        0 => {},
+        1 => return modify_failed(44, "permission denied"),
+        _ => return modify_failed(36, "invalid `return_id` value"),
+    }
+    let state = match ans_iter.affected_rows() {
         /* Remove: User does not exists, do not need to remove */
         0 => 0,
         /* Remove: Use exists, performed remove process */
