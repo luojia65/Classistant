@@ -41,7 +41,8 @@ fn main() {
                 .route("/api/v1.user-data.modify", web::post().to(data_user::modify))
                 .route("/api/v1.user-data.get", web::post().to(data_user::get))
                 .route("/api/v1.group.create", web::post().to(group::create))
-                .route("/api/v1.group.modify", web::post().to(group::modify))
+                .route("/api/v1.group.modify-member", web::post().to(group::modify_member))
+                .route("/api/v1.group.remove-member", web::post().to(group::remove_member))
         })
         .bind(api_bind_addr).expect("bind API server")
         .run().expect("run API server");

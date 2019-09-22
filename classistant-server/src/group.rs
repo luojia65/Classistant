@@ -3,8 +3,10 @@ use serde::{Serialize, Deserialize};
 
 const ACTION_CREATE_REQUEST: &str = "v1.group.create.request";
 const ACTION_CREATE_REPLY: &str = "v1.group.create.reply";
-const ACTION_MODIFY_REQUEST: &str = "v1.group.modify.request";
-const ACTION_MODIFY_REPLY: &str = "v1.group.modify.reply";
+const ACTION_MODIFY_REQUEST: &str = "v1.group.modify-member.request";
+const ACTION_MODIFY_REPLY: &str = "v1.group.modify-member.reply";
+const ACTION_REMOVE_REQUEST: &str = "v1.group.remove-member.request";
+const ACTION_REMOVE_REPLY: &str = "v1.group.remove-member.reply";
 
 #[derive(Deserialize)]
 pub struct CreateRequest {
@@ -92,7 +94,7 @@ pub struct ModifyResponse {
     success_state: Option<i32>, 
 }
 
-pub fn modify(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
+pub fn modify_member(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> HttpResponse {
     if info.action != ACTION_MODIFY_REQUEST {
         return modify_failed(20, "wrong action type");
     }
@@ -135,6 +137,74 @@ pub fn modify(db: web::Data<mysql::Pool>, info: web::Json<ModifyRequest>) -> Htt
 fn modify_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
     HttpResponse::Ok().json(ModifyResponse {
         action: ACTION_MODIFY_REPLY,
+        return_id: id,
+        failed_reason: Some(reason.into()),
+        success_state: None,
+    })
+}
+
+#[derive(Deserialize)]
+pub struct RemoveRequest {
+    action: String,
+    gid: u64,
+    uid: u64,
+}
+
+#[derive(Serialize)]
+pub struct RemoveResponse {
+    action: &'static str,
+    #[serde(rename = "return")]
+    return_id: u32,
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
+    #[serde(rename = "state")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    success_state: Option<i32>, 
+}
+
+
+pub fn remove_member(db: web::Data<mysql::Pool>, info: web::Json<RemoveRequest>) -> HttpResponse {
+    if info.action != ACTION_REMOVE_REQUEST {
+        return remove_failed(20, "wrong action type");
+    }
+    if info.uid == 0 {       
+        return remove_failed(10, "zero uid");
+    }
+    if info.gid == 0 {
+        return remove_failed(11, "zero gid");
+    }
+    let mut conn = match db.get_conn() {
+        Ok(r) => r,
+        Err(_) => return remove_failed(30, "failed to get connection from database"),    
+    };
+    let mut stmt = match conn.prepare("CALL PGroupMemberRemove(?, ?)") {
+        Ok(r) => r,
+        Err(_) => return remove_failed(31, "failed to prepare statement"),    
+    };
+    let result = match stmt.execute((info.gid, info.uid)) {
+        Ok(r) => r,
+        Err(_) => return remove_failed(32, "failed to execute statement"),    
+    };
+    let state = match result.affected_rows() {
+        /* Remove: User does not exists, do not need to remove */
+        0 => 0,
+        /* Remove: Use exists, performed remove process */
+        1 => 1,
+        _ => -1,
+    };
+    HttpResponse::Ok().json(RemoveResponse {
+        action: ACTION_REMOVE_REPLY,
+        return_id: 0,
+        failed_reason: None,
+        success_state: Some(state),
+    })
+}
+
+#[inline]
+fn remove_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
+    HttpResponse::Ok().json(RemoveResponse {
+        action: ACTION_REMOVE_REPLY,
         return_id: id,
         failed_reason: Some(reason.into()),
         success_state: None,
