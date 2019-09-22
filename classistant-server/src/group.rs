@@ -91,6 +91,7 @@ fn create_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
 #[derive(Deserialize)]
 pub struct ModifyRequest {
     action: String,
+    operator_uid: u64,
     gid: u64,
     uid: u64,
     new_priv: u64,
@@ -123,19 +124,46 @@ pub fn modify_member(
     if info.gid == 0 {
         return modify_failed(11, "zero gid");
     }
+    let id = match id.identity() {
+        Some(id) => match IdentityInner::from_json_str(&id) {
+            Ok(id) => id,
+            _ => return create_failed(40, "illegal identity"),
+        },
+        _ => return create_failed(41, "no identity exist"),
+    };
+    if id.uid() != info.operator_uid {
+        return create_failed(42, "permission denied");
+    }
+    if id.is_expired() {
+        return create_failed(43, "identity expired");
+    }
     let mut conn = match db.get_conn() {
         Ok(r) => r,
         Err(_) => return modify_failed(30, "failed to get connection from database"),    
     };
-    let mut stmt = match conn.prepare("CALL PGroupMemberModify(?, ?, ?)") {
+    let mut stmt = match conn.prepare("CALL PGroupMemberModify(?, ?, ?, ?)") {
         Ok(r) => r,
         Err(_) => return modify_failed(31, "failed to prepare statement"),    
     };
-    let result = match stmt.execute((info.gid, info.uid, info.new_priv)) {
+    let mut ans_iter = match stmt.execute((info.gid, info.uid, info.new_priv, info.operator_uid)) {
         Ok(r) => r,
         Err(_) => return modify_failed(32, "failed to execute statement"),    
     };
-    let state = match result.affected_rows() {
+    let ans = match ans_iter.next() {
+        Some(Ok(r)) => r,
+        None => return modify_failed(33, "unexpected end of return rows"),
+        Some(Err(_)) => return modify_failed(34, "failed to iterate over answer rows"),
+    };
+    let return_id: u64 = match ans.get("return_id") {
+        Some(r) => r,
+        None => return modify_failed(35, "no `return_id` row returned"),
+    };
+    match return_id {
+        0 => {},
+        1 => return modify_failed(44, "permission denied"),
+        _ => return modify_failed(36, "invalid `return_id` value"),
+    }
+    let state = match ans_iter.affected_rows() {
         /* Add: User exists with same priv, not updated */
         0 => 0,
         /* Add: User not exists, added new user to group */
