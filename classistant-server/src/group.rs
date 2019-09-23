@@ -129,15 +129,15 @@ pub fn modify_member(
     let id = match id.identity() {
         Some(id) => match IdentityInner::from_json_str(&id) {
             Ok(id) => id,
-            _ => return create_failed(40, "illegal identity"),
+            _ => return modify_failed(40, "illegal identity"),
         },
-        _ => return create_failed(41, "no identity exist"),
+        _ => return modify_failed(41, "no identity exist"),
     };
     if id.uid() != info.operator_uid {
-        return create_failed(42, "permission denied");
+        return modify_failed(42, "permission denied");
     }
     if id.is_expired() {
-        return create_failed(43, "identity expired");
+        return modify_failed(43, "identity expired");
     }
     let mut conn = match db.get_conn() {
         Ok(r) => r,
