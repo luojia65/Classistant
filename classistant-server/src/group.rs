@@ -9,6 +9,8 @@ const ACTION_MODIFY_REQUEST: &str = "v1.group.modify-member.request";
 const ACTION_MODIFY_REPLY: &str = "v1.group.modify-member.reply";
 const ACTION_REMOVE_REQUEST: &str = "v1.group.remove-member.request";
 const ACTION_REMOVE_REPLY: &str = "v1.group.remove-member.reply";
+const ACTION_TRANSFER_REQUEST: &str = "v1.group.transfer-owner.request";
+const ACTION_TRANSFER_REPLY: &str = "v1.group.transfer-owner.reply";
 
 #[derive(Deserialize)]
 pub struct CreateRequest {
@@ -228,15 +230,15 @@ pub fn remove_member(
     let id = match id.identity() {
         Some(id) => match IdentityInner::from_json_str(&id) {
             Ok(id) => id,
-            _ => return create_failed(40, "illegal identity"),
+            _ => return remove_failed(40, "illegal identity"),
         },
-        _ => return create_failed(41, "no identity exist"),
+        _ => return remove_failed(41, "no identity exist"),
     };
     if id.uid() != info.operator_uid {
-        return create_failed(42, "permission denied");
+        return remove_failed(42, "permission denied");
     }
     if id.is_expired() {
-        return create_failed(43, "identity expired");
+        return remove_failed(43, "identity expired");
     }
     let mut conn = match db.get_conn() {
         Ok(r) => r,
@@ -252,17 +254,17 @@ pub fn remove_member(
     };
     let ans = match ans_iter.next() {
         Some(Ok(r)) => r,
-        None => return modify_failed(33, "unexpected end of return rows"),
-        Some(Err(_)) => return modify_failed(34, "failed to iterate over answer rows"),
+        None => return remove_failed(33, "unexpected end of return rows"),
+        Some(Err(_)) => return remove_failed(34, "failed to iterate over answer rows"),
     };
     let return_id: u64 = match ans.get("return_id") {
         Some(r) => r,
-        None => return modify_failed(35, "no `return_id` row returned"),
+        None => return remove_failed(35, "no `return_id` row returned"),
     };
     match return_id {
         0 => {},
-        1 => return modify_failed(44, "permission denied"),
-        _ => return modify_failed(36, "invalid `return_id` value"),
+        1 => return remove_failed(44, "permission denied"),
+        _ => return remove_failed(36, "invalid `return_id` value"),
     }
     let state = match ans_iter.affected_rows() {
         /* Remove: User does not exists, do not need to remove */
@@ -286,5 +288,92 @@ fn remove_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
         return_id: id,
         failed_reason: Some(reason.into()),
         success_state: None,
+    })
+}
+
+#[derive(Deserialize)]
+pub struct TransferOwnerRequest {
+    action: String,
+    gid: u64,
+    src_uid: u64,
+    dest_uid: u64,
+}
+
+#[derive(Serialize)]
+pub struct TransferOwnerResponse {
+    action: &'static str,
+    #[serde(rename = "return")]
+    return_id: u32,
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
+}
+
+pub fn transfer_owner(
+    id: Identity, 
+    db: web::Data<mysql::Pool>, 
+    info: web::Json<TransferOwnerRequest>
+) -> HttpResponse {
+    if info.action != ACTION_TRANSFER_REQUEST {
+        return transfer_owner_failed(20, "wrong action type");
+    }
+    if info.src_uid == 0 || info.dest_uid == 0 {       
+        return transfer_owner_failed(10, "zero uid");
+    }
+    if info.gid == 0 {
+        return transfer_owner_failed(11, "zero gid");
+    }
+    let id = match id.identity() {
+        Some(id) => match IdentityInner::from_json_str(&id) {
+            Ok(id) => id,
+            _ => return transfer_owner_failed(40, "illegal identity"),
+        },
+        _ => return transfer_owner_failed(41, "no identity exist"),
+    };
+    if id.uid() != info.src_uid {
+        return transfer_owner_failed(42, "permission denied");
+    }
+    if id.is_expired() {
+        return transfer_owner_failed(43, "identity expired");
+    }
+    let mut conn = match db.get_conn() {
+        Ok(r) => r,
+        Err(_) => return transfer_owner_failed(30, "failed to get connection from database"),    
+    };
+    let mut stmt = match conn.prepare("CALL PGroupTransferOwner(?, ?, ?)") {
+        Ok(r) => r,
+        Err(_) => return transfer_owner_failed(31, "failed to prepare statement"),    
+    };
+    let mut ans_iter = match stmt.execute((info.gid, info.src_uid, info.dest_uid)) {
+        Ok(r) => r,
+        Err(_) => return transfer_owner_failed(32, "failed to execute statement"),    
+    };
+    let ans = match ans_iter.next() {
+        Some(Ok(r)) => r,
+        None => return transfer_owner_failed(33, "unexpected end of return rows"),
+        Some(Err(_)) => return transfer_owner_failed(34, "failed to iterate over answer rows"),
+    };
+    let return_id: u64 = match ans.get("return_id") {
+        Some(r) => r,
+        None => return transfer_owner_failed(35, "no `return_id` row returned"),
+    };
+    match return_id {
+        0 => {},
+        1 => return transfer_owner_failed(44, "permission denied"),
+        _ => return transfer_owner_failed(36, "invalid `return_id` value"),
+    }
+    HttpResponse::Ok().json(TransferOwnerResponse {
+        action: ACTION_TRANSFER_REPLY,
+        return_id: 0,
+        failed_reason: None,
+    })
+}
+
+#[inline]
+fn transfer_owner_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
+    HttpResponse::Ok().json(TransferOwnerResponse {
+        action: ACTION_TRANSFER_REPLY,
+        return_id: id,
+        failed_reason: Some(reason.into()),
     })
 }

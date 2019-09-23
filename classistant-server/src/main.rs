@@ -64,6 +64,7 @@ fn main() {
                 .route("/api/v1.group.create", web::post().to(group::create))
                 .route("/api/v1.group.modify-member", web::post().to(group::modify_member))
                 .route("/api/v1.group.remove-member", web::post().to(group::remove_member))
+                .route("/api/v1.group.transfer-owner", web::post().to(group::transfer_owner))
                 .default_service(web::route().to(|| HttpResponse::NotFound()))
         })
         .bind(api_bind_addr).expect("bind API server")
