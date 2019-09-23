@@ -33,6 +33,7 @@ pub struct RegisterResponse {
     success_uid: Option<u64>,
 }
 
+// todo: modify this function to allow email (or SMS) register only
 pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) -> HttpResponse {
     if info.action != ACTION_REGISTER_REQUEST {
         return register_failed(20, "wrong action type");
