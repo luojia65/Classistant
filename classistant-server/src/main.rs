@@ -58,6 +58,7 @@ fn main() {
                 .route("/api/{path}", web::get().to(|| HttpResponse::MethodNotAllowed().body("use POST")))
                 .route("/api/v1.auth.register", web::post().to(auth::register))
                 .route("/api/v1.auth.login", web::post().to(auth::login))
+                .route("/api/v1.auth.logout", web::post().to(auth::logout))
                 .route("/api/v1.user-data.modify", web::post().to(data_user::modify))
                 .route("/api/v1.user-data.get", web::post().to(data_user::get))
                 .route("/api/v1.group.create", web::post().to(group::create))

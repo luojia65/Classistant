@@ -9,6 +9,8 @@ const ACTION_REGISTER_REQUEST: &str = "v1.auth.register.request";
 const ACTION_REGISTER_REPLY: &str = "v1.auth.register.reply";
 const ACTION_LOGIN_REQUEST: &str = "v1.auth.login.request";
 const ACTION_LOGIN_REPLY: &str = "v1.auth.login.reply";
+const ACTION_LOGOUT_REQUEST: &str = "v1.auth.logout.request";
+const ACTION_LOGOUT_REPLY: &str = "v1.auth.logout.reply";
 
 #[derive(Deserialize)]
 pub struct RegisterRequest {
@@ -217,5 +219,48 @@ fn login_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
         failed_reason: Some(reason.into()),
         success_uid: None,
         success_nickname: None,
+    })
+}
+
+#[derive(Deserialize)]
+pub struct LogoutRequest {
+    action: String,
+}
+
+#[derive(Serialize)]
+pub struct LogoutResponse {
+    action: &'static str,
+    #[serde(rename = "return")]
+    return_id: u32,
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
+}
+
+pub fn logout(
+    id: Identity, 
+    info: web::Json<LogoutRequest>
+) -> HttpResponse { 
+    if info.action != ACTION_LOGOUT_REQUEST {
+        return logout_failed(20, "wrong action type");
+    }
+    if id.identity().is_some() {
+        id.forget();
+    } else {
+        return logout_failed(41, "no identity found")
+    }
+    HttpResponse::Ok().json(LogoutResponse {
+        action: ACTION_LOGOUT_REPLY,
+        return_id: 0,
+        failed_reason: None
+    })
+}
+
+#[inline]
+fn logout_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
+    HttpResponse::Ok().json(LogoutResponse {
+        action: ACTION_LOGOUT_REPLY,
+        return_id: id,
+        failed_reason: Some(reason.into()),
     })
 }
