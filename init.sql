@@ -214,3 +214,29 @@ BEGIN
 	  SELECT 0 AS `return_id`; -- success
   END IF;
 END
+
+DROP PROCEDURE IF EXISTS `PGroupDelete`;
+
+CREATE PROCEDURE `PGroupDelete`(
+    `_group_id` INT,
+	`_operator_user_id` INT
+)
+BEGIN
+	DECLARE `op_priv` INT DEFAULT NULL;
+    SELECT `priv` INTO `op_priv`
+    FROM `DGroupMember`
+    WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
+    IF `op_priv` != 2 THEN 
+		IF `op_priv` IS NULL THEN 
+			SELECT 2 as `return_id`; -- group not found
+		ELSE
+			SELECT 1 as `return_id`; -- permission denied
+        END IF;
+	ELSE 
+		-- expire all group members
+		UPDATE `DGroupMember` 
+        SET `date_expired` = CURRENT_TIMESTAMP()
+        WHERE `group_id` = `_group_id`;
+		SELECT 0 as `return_id`; -- success
+    END IF;
+END

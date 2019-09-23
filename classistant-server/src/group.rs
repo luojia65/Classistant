@@ -11,6 +11,8 @@ const ACTION_REMOVE_REQUEST: &str = "v1.group.remove-member.request";
 const ACTION_REMOVE_REPLY: &str = "v1.group.remove-member.reply";
 const ACTION_TRANSFER_REQUEST: &str = "v1.group.transfer-owner.request";
 const ACTION_TRANSFER_REPLY: &str = "v1.group.transfer-owner.reply";
+const ACTION_DELETE_REQUEST: &str = "v1.group.delete.request";
+const ACTION_DELETE_REPLY: &str = "v1.group.delete.reply";
 
 #[derive(Deserialize)]
 pub struct CreateRequest {
@@ -373,6 +375,93 @@ pub fn transfer_owner(
 fn transfer_owner_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
     HttpResponse::Ok().json(TransferOwnerResponse {
         action: ACTION_TRANSFER_REPLY,
+        return_id: id,
+        failed_reason: Some(reason.into()),
+    })
+}
+
+#[derive(Deserialize)]
+pub struct DeleteRequest {
+    action: String,
+    operator_uid: u64,
+    gid: u64,
+}
+
+#[derive(Serialize)]
+pub struct DeleteResponse {
+    action: &'static str,
+    #[serde(rename = "return")]
+    return_id: u32,
+    #[serde(rename = "reason")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failed_reason: Option<String>,
+}
+
+pub fn delete(
+    id: Identity, 
+    db: web::Data<mysql::Pool>, 
+    info: web::Json<DeleteRequest>
+) -> HttpResponse {
+    if info.action != ACTION_DELETE_REQUEST {
+        return delete_failed(20, "wrong action type");
+    }
+    if info.operator_uid == 0 {       
+        return delete_failed(10, "zero uid");
+    }
+    if info.gid == 0 {
+        return delete_failed(11, "zero gid");
+    }
+    let id = match id.identity() {
+        Some(id) => match IdentityInner::from_json_str(&id) {
+            Ok(id) => id,
+            _ => return delete_failed(40, "illegal identity"),
+        },
+        _ => return delete_failed(41, "no identity exist"),
+    };
+    if id.uid() != info.operator_uid {
+        return delete_failed(42, "permission denied");
+    }
+    if id.is_expired() {
+        return delete_failed(43, "identity expired");
+    }
+    let mut conn = match db.get_conn() {
+        Ok(r) => r,
+        Err(_) => return delete_failed(30, "failed to get connection from database"),    
+    };
+    let mut stmt = match conn.prepare("CALL PGroupDelete(?, ?)") {
+        Ok(r) => r,
+        Err(_) => return delete_failed(31, "failed to prepare statement"),    
+    };
+    let mut ans_iter = match stmt.execute((info.gid, info.operator_uid)) {
+        Ok(r) => r,
+        Err(_) => return delete_failed(32, "failed to execute statement"),    
+    };
+    let ans = match ans_iter.next() {
+        Some(Ok(r)) => r,
+        None => return delete_failed(33, "unexpected end of return rows"),
+        Some(Err(_)) => return delete_failed(34, "failed to iterate over answer rows"),
+    };
+    let return_id: u64 = match ans.get("return_id") {
+        Some(r) => r,
+        None => return delete_failed(35, "no `return_id` row returned"),
+    };
+    match return_id {
+        0 => {},
+        1 => return delete_failed(44, "permission denied"),
+        2 => return delete_failed(12, "group id not found"),
+        _ => return delete_failed(36, "invalid `return_id` value"),
+    }
+    HttpResponse::Ok().json(TransferOwnerResponse {
+        action: ACTION_DELETE_REPLY,
+        return_id: 0,
+        failed_reason: None,
+    })
+}
+
+#[inline]
+fn delete_failed<T: Into<String>>(id: u32, reason: T) -> HttpResponse {
+    HttpResponse::Ok().json(TransferOwnerResponse {
+        action: ACTION_DELETE_REPLY,
         return_id: id,
         failed_reason: Some(reason.into()),
     })
