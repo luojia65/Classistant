@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 mod site_config;
 mod auth;
+mod auth_hash;
 mod identity;
 mod db;
 mod data_user;

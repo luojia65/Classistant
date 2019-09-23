@@ -1,82 +1,92 @@
 CREATE TABLE IF NOT EXISTS `DUserAuth` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `nickname` varchar(48) NOT NULL,
-  `hash` blob NOT NULL,
-  `date_register` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`)
+    `user_id` int(11) NOT NULL AUTO_INCREMENT,
+    `nickname` varchar(48) NOT NULL,
+    `hash` blob,
+    `date_register` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`user_id`)
 );
 
 DROP PROCEDURE IF EXISTS `PUserRegister`;
 
 CREATE PROCEDURE `PUserRegister`(
-	IN `_nickname` VARCHAR(48),
-	IN `_hash` BLOB
+    IN `_nickname` VARCHAR(48)
 )
 BEGIN
-	DECLARE `_tmp_user_id` INT;
+    DECLARE `_tmp_user_id` INT;
     
-	SELECT `user_id` 
-  INTO `_tmp_user_id`
-  FROM `DUserAuth` WHERE `nickname` = `_nickname`;
+    SELECT `user_id` 
+    INTO `_tmp_user_id`
+    FROM `DUserAuth` WHERE `nickname` = `_nickname`;
     
-  IF `_tmp_user_id` IS NOT NULL THEN 
-    SELECT 1 as `return_id`; -- nickname already taken
-	ELSE
-    INSERT INTO `DUserAuth` (`nickname`,`hash`) 
-    VALUES (`_nickname`,`_hash`);
-    SELECT `user_id` INTO `_tmp_user_id` FROM `DUserAuth` WHERE `nickname` = `_nickname`;
-    SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`; -- success
-  END IF;
+    IF `_tmp_user_id` IS NOT NULL THEN 
+        SELECT 1 as `return_id`; -- nickname already taken
+    ELSE
+        INSERT INTO `DUserAuth` (`nickname`,`hash`) 
+        VALUES (`_nickname`,`_hash`);
+        SELECT `user_id` INTO `_tmp_user_id` FROM `DUserAuth` WHERE `nickname` = `_nickname`;
+        SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`; -- success
+    END IF;
+END
+
+DROP PROCEDURE IF EXISTS `PUserRegisterFillHash`;
+
+CREATE PROCEDURE `PUserRegisterFillHash`(
+    IN `_user_id` INT,
+    IN `_hash` BLOB
+)
+BEGIN 
+    UPDATE `DUserAuth` SET `hash` = `_hash`
+    WHERE `user_id` = `_user_id`;
 END
 
 DROP PROCEDURE IF EXISTS `PUserLoginById`;
 
 CREATE PROCEDURE `PUserLoginById`(
-	IN `_user_id` INT,
-	IN `_hash` BLOB
+    IN `_user_id` INT,
+    IN `_hash` BLOB
 )
 BEGIN
-	DECLARE `_tmp_nickname` VARCHAR(48);
+    DECLARE `_tmp_nickname` VARCHAR(48);
     DECLARE `_tmp_hash` BLOB;
     
-	SELECT `nickname`, `hash`
+    SELECT `nickname`, `hash`
     INTO `_tmp_nickname`, `_tmp_hash`
     FROM `DUserAuth` WHERE `user_id` = `_user_id`;
-	
+    
     IF `_tmp_nickname` IS NULL THEN 
-		SELECT 2 as `return_id`; -- user of this id not found
-	ELSE 
-		IF `_tmp_hash` != `_hash` THEN
-			SELECT 1 as `return_id`; -- wrong password
-		ELSE 
-			SELECT 0 as `return_id`, `_user_id` as `user_id`, `_tmp_nickname` as `nickname`;
-		END IF;
-	END IF;
+        SELECT 2 as `return_id`; -- user of this id not found
+    ELSE 
+        IF `_tmp_hash` != `_hash` THEN
+            SELECT 1 as `return_id`; -- wrong password
+        ELSE 
+            SELECT 0 as `return_id`, `_user_id` as `user_id`, `_tmp_nickname` as `nickname`;
+        END IF;
+    END IF;
 END
 
 DROP PROCEDURE IF EXISTS `PUserLoginByNickname`;
 
 CREATE PROCEDURE `PUserLoginByNickname`(
-	IN `_nickname` VARCHAR(48),
-	IN `_hash` BLOB
+    IN `_nickname` VARCHAR(48),
+    IN `_hash` BLOB
 )
 BEGIN
-	DECLARE `_tmp_user_id` INT;
+    DECLARE `_tmp_user_id` INT;
     DECLARE `_tmp_hash` BLOB;
     
-	SELECT `user_id`, `hash`
+    SELECT `user_id`, `hash`
     INTO `_tmp_user_id`, `_tmp_hash`
     FROM `DUserAuth` WHERE `nickname` = `_nickname`;
-	
+    
     IF `_tmp_user_id` IS NULL THEN 
-		SELECT 3 as `return_id`; -- user of this nickname not found
-	ELSE 
-		IF `_tmp_hash` != `_hash` THEN
-			SELECT 1 as `return_id`; -- wrong password
-		ELSE 
-			SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`, `_nickname` as `nickname`;
-		END IF;
-	END IF;
+        SELECT 3 as `return_id`; -- user of this nickname not found
+    ELSE 
+        IF `_tmp_hash` != `_hash` THEN
+            SELECT 1 as `return_id`; -- wrong password
+        ELSE 
+            SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`, `_nickname` as `nickname`;
+        END IF;
+    END IF;
 END
 
 CREATE TABLE IF NOT EXISTS `DDataUser` (
@@ -92,151 +102,151 @@ CREATE TABLE IF NOT EXISTS `DDataUser` (
 DROP PROCEDURE IF EXISTS `PDataUInsert`;
 
 CREATE PROCEDURE `PDataUInsert`(
-	IN `_user_id` INT,
+    IN `_user_id` INT,
   IN `_group_id` INT,
   IN `_type_id` BINARY(16),
-	IN `_data` BLOB
+    IN `_data` BLOB
 )
 BEGIN
     INSERT INTO `DDataUser` (`user_id`,`group_id`,`type_id`,`data`)
-	VALUES (`_user_id`, `_group_id`,`_type_id`,`_data`)
+    VALUES (`_user_id`, `_group_id`,`_type_id`,`_data`)
     ON DUPLICATE KEY UPDATE `data` = `_data`;
 END
 
 DROP PROCEDURE IF EXISTS `PDataUGet`;
 
 CREATE PROCEDURE `PDataUGet`(
-	IN `_user_id` INT,
+    IN `_user_id` INT,
     IN `_group_id` INT,
     IN `_type_id` BINARY(16)
 )
 BEGIN
     SELECT `data` FROM `DDataUser` 
     WHERE `user_id` = `_user_id` AND
-		  `group_id` = `_group_id` AND
+          `group_id` = `_group_id` AND
           `type_id` = `_type_id`;
 END
 
 CREATE TABLE `DGroupMember` (
-  `group_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `priv` int(11) NOT NULL,
-  `date_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `date_expired` datetime DEFAULT NULL,
-  PRIMARY KEY (`group_id`,`user_id`)
+    `group_id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) NOT NULL,
+    `priv` int(11) NOT NULL,
+    `date_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `date_expired` datetime DEFAULT NULL,
+    PRIMARY KEY (`group_id`,`user_id`)
 );
 
 DROP PROCEDURE IF EXISTS `PGroupCreate`;
 
 CREATE PROCEDURE `PGroupCreate`(
-	`_creator_user_id` INT
+    `_creator_user_id` INT
 )
 BEGIN
-	INSERT INTO `DGroupMember` (`user_id`,`priv`)
-	VALUES (`_creator_user_id`, 2);
-	SELECT last_insert_id() as `group_id`;
+    INSERT INTO `DGroupMember` (`user_id`,`priv`)
+    VALUES (`_creator_user_id`, 2);
+    SELECT last_insert_id() as `group_id`;
 END
 
 DROP PROCEDURE IF EXISTS `PGroupMemberModify`;
 
 CREATE PROCEDURE `PGroupMemberModify`(
-	`_group_id` INT,
-  `_user_id` INT,
-  `_new_priv` INT,
-  `_operator_user_id` INT
+    `_group_id` INT,
+    `_user_id` INT,
+    `_new_priv` INT,
+    `_operator_user_id` INT
 )
 BEGIN
-	DECLARE `op_priv` INT DEFAULT 0;
-  SELECT `priv` INTO `op_priv`
-  FROM `DGroupMember`
-  WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
-  IF (`op_priv` = 1 AND `_new_priv` != 0) OR 
-		(`op_priv` != 1 AND `op_priv` != 2) 
-	THEN 
-		SELECT 1 as `return_id`; -- permission denied
-	ELSE 
-		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-		VALUES (`_group_id`,`_user_id`, `_new_priv`)
-		ON DUPLICATE KEY UPDATE `priv` = `_new_priv`, `date_expired` = NULL, 
-			`date_modified` = CURRENT_TIMESTAMP();
-		SELECT 0 as `return_id`; -- success
-  END IF;
+    DECLARE `op_priv` INT DEFAULT 0;
+    SELECT `priv` INTO `op_priv`
+    FROM `DGroupMember`
+    WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
+    IF (`op_priv` = 1 AND `_new_priv` != 0) OR 
+        (`op_priv` != 1 AND `op_priv` != 2) 
+    THEN 
+        SELECT 1 as `return_id`; -- permission denied
+    ELSE 
+        INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
+        VALUES (`_group_id`,`_user_id`, `_new_priv`)
+        ON DUPLICATE KEY UPDATE `priv` = `_new_priv`, `date_expired` = NULL, 
+            `date_modified` = CURRENT_TIMESTAMP();
+        SELECT 0 as `return_id`; -- success
+    END IF;   
 END
 
 DROP PROCEDURE IF EXISTS `PGroupMemberRemove`;
 
 CREATE PROCEDURE `PGroupMemberRemove`(
-	`_group_id` INT,
+    `_group_id` INT,
   `_user_id` INT,
   `_operator_user_id` INT
 )
 BEGIN
-	DECLARE `op_priv` INT DEFAULT 0;
-  SELECT `priv` INTO `op_priv`
-  FROM `DGroupMember`
-  WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
-  IF `op_priv` != 1 AND `op_priv` != 2 THEN 
-		SELECT 1 as `return_id`; -- permission denied
-	ELSE 
-		UPDATE `DGroupMember` 
-		SET `date_expired` = CURRENT_TIMESTAMP()
-		WHERE `group_id` = `_group_id` AND `user_id` = `_user_id`;
-		SELECT 0 as `return_id`; -- success
-	END IF;
+    DECLARE `op_priv` INT DEFAULT 0;
+    SELECT `priv` INTO `op_priv`
+    FROM `DGroupMember`
+    WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
+    IF `op_priv` != 1 AND `op_priv` != 2 THEN 
+        SELECT 1 as `return_id`; -- permission denied
+    ELSE 
+        UPDATE `DGroupMember` 
+        SET `date_expired` = CURRENT_TIMESTAMP()
+        WHERE `group_id` = `_group_id` AND `user_id` = `_user_id`;
+        SELECT 0 as `return_id`; -- success
+    END IF;
 END
 
 DROP PROCEDURE IF EXISTS `PGroupTransferOwner`;
 
 CREATE PROCEDURE `PGroupTransferOwner`(
-	`_group_id` INT,
+    `_group_id` INT,
   `_user_id_src` INT,
   `_user_id_dst` INT
 )
 BEGIN
-	DECLARE `op_priv` INT DEFAULT 0;
-  SELECT `priv` INTO `op_priv`
-  FROM `DGroupMember`
-  WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
-  IF `op_priv` != 2 THEN
-	  SELECT 1 AS `return_id`; -- permission denied
-	ELSE
-	  START TRANSACTION;
-		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-		VALUES (`_group_id`,`_user_id_src`, 0)
-		ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL, 
-			`date_modified` = CURRENT_TIMESTAMP();
-		INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
-		VALUES (`_group_id`,`_user_id_dst`, 2)
-		ON DUPLICATE KEY UPDATE `priv` = 2, `date_expired` = NULL, 
-			`date_modified` = CURRENT_TIMESTAMP();
+    DECLARE `op_priv` INT DEFAULT 0;
+    SELECT `priv` INTO `op_priv`
+    FROM `DGroupMember`
+    WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
+    IF `op_priv` != 2 THEN
+      SELECT 1 AS `return_id`; -- permission denied
+    ELSE
+      START TRANSACTION;
+        INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
+        VALUES (`_group_id`,`_user_id_src`, 0)
+        ON DUPLICATE KEY UPDATE `priv` = 0, `date_expired` = NULL, 
+            `date_modified` = CURRENT_TIMESTAMP();
+        INSERT INTO `DGroupMember` (`group_id`,`user_id`,`priv`)
+        VALUES (`_group_id`,`_user_id_dst`, 2)
+        ON DUPLICATE KEY UPDATE `priv` = 2, `date_expired` = NULL, 
+            `date_modified` = CURRENT_TIMESTAMP();
     COMMIT;
-	  SELECT 0 AS `return_id`; -- success
-  END IF;
+        SELECT 0 AS `return_id`; -- success
+    END IF;
 END
 
 DROP PROCEDURE IF EXISTS `PGroupDelete`;
 
 CREATE PROCEDURE `PGroupDelete`(
     `_group_id` INT,
-	`_operator_user_id` INT
+    `_operator_user_id` INT
 )
 BEGIN
-	DECLARE `op_priv` INT DEFAULT NULL;
+    DECLARE `op_priv` INT DEFAULT NULL;
     SELECT `priv` INTO `op_priv`
     FROM `DGroupMember`
     WHERE `group_id` = `_group_id` AND `user_id` = `_operator_user_id`;
     IF `op_priv` != 2 THEN 
-		IF `op_priv` IS NULL THEN 
-			SELECT 2 as `return_id`; -- group not found
-		ELSE
-			SELECT 1 as `return_id`; -- permission denied
+        IF `op_priv` IS NULL THEN 
+            SELECT 2 as `return_id`; -- group not found
+        ELSE
+            SELECT 1 as `return_id`; -- permission denied
         END IF;
-	ELSE 
-		-- expire all group members
-		UPDATE `DGroupMember` 
+    ELSE 
+        -- expire all group members
+        UPDATE `DGroupMember` 
         SET `date_expired` = CURRENT_TIMESTAMP()
         WHERE `group_id` = `_group_id`;
-		SELECT 0 as `return_id`; -- success
+        SELECT 0 as `return_id`; -- success
     END IF;
 END

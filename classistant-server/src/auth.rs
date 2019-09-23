@@ -3,6 +3,7 @@ use actix_identity::Identity;
 use serde::{Serialize, Deserialize};
 use crate::site_config::SiteConfig;
 use crate::identity::IdentityInner;
+use crate::auth_hash;
 use std::sync::Arc;
 
 const ACTION_REGISTER_REQUEST: &str = "v1.auth.register.request";
@@ -16,7 +17,7 @@ const ACTION_LOGOUT_REPLY: &str = "v1.auth.logout.reply";
 pub struct RegisterRequest {
     action: String,
     nickname: String,
-    hash: String,
+    password: String,
     locale: String,
 }
 
@@ -38,10 +39,6 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
     if info.action != ACTION_REGISTER_REQUEST {
         return register_failed(20, "wrong action type");
     }
-    let hash = match base64::decode(&info.hash) {
-        Ok(r) => r,
-        Err(_) => return register_failed(21, "failed to decode base64 hash"),    
-    };
     if info.nickname.len() == 0 {       
         return register_failed(11, "empty nickname");
     }
@@ -64,7 +61,7 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
         Ok(r) => r,
         Err(_) => return register_failed(31, "failed to prepare statement"),    
     };
-    let mut ans_iter = match stmt.execute((&info.nickname, hash)) {
+    let mut ans_iter = match stmt.execute((&info.nickname,)) {
         Ok(r) => r,
         Err(_) => return register_failed(32, "failed to execute statement"),    
     };
@@ -87,6 +84,20 @@ pub fn register(db: web::Data<mysql::Pool>, info: web::Json<RegisterRequest>) ->
     let uid: u64 = match ans.get("user_id") {
         Some(r) => r,
         None => return register_failed(37, "invalid `user_id` value")
+    };
+    let mut hash = vec![0u8; 64];
+    auth_hash::hash(uid, &info.password, &mut hash);
+    let mut conn = match db.get_conn() {
+        Ok(r) => r,
+        Err(_) => return register_failed(30, "failed to get connection from database"),    
+    };
+    let mut stmt = match conn.prepare("CALL PUserRegisterFillHash(?, ?)") {
+        Ok(r) => r,
+        Err(_) => return register_failed(31, "failed to prepare statement"),    
+    };
+    match stmt.execute((uid, hash)) {
+        Ok(_) => {},
+        Err(_) => return register_failed(32, "failed to execute statement"),    
     };
     HttpResponse::Ok().json(RegisterResponse {
         action: ACTION_REGISTER_REPLY,
