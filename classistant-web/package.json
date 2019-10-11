@@ -10,6 +10,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-scripts": "latest",
+    "react-useinterval": "^1.0.1",
     "typescript": "latest"
   },
   "scripts": {

@@ -1,7 +1,7 @@
 import Visibility from "@material-ui/icons/Visibility";
 import clsx from "clsx";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import React from "react";
+import React, { useEffect } from "react";
 import Input from "@material-ui/core/Input";
 import { makeStyles } from "@material-ui/styles";
 import {
@@ -43,26 +43,43 @@ interface State {
   showPassword: boolean;
 }
 
-interface CanAuthProps{
+interface CanAuthProps {
   canAuth: boolean;
-  timeForAuth: number;
   handleClick: () => void;
 }
 
-function authTimeButton(props: CanAuthProps) {
-  const [time, setTime] = React.useState<Number>(60);//can hook place in here?
+function AuthTimeButton(props: CanAuthProps) {
+  const [time, setTime] = React.useState<number>(10); //can hook place in here?
+  useEffect(() => {
+    if (!props.canAuth) {
+      if (time <= 0) {
+        props.handleClick();
+        setTime(10);
+        return;
+      }
+      setTimeout(() => {
+        setTime(time - 1);
+      }, 1000);
+      console.log(time);
+    }
+  }, [time, props]);
   if (props.canAuth) {
     return (
-      <Tooltip title="Auth" >
-        <Button onClick={() => {
-          //TODO
-        }}>Click Here To Auth</Button>
+      <Tooltip title="Auth">
+        <Button
+          onClick={() => {
+            props.handleClick();
+            //TODO
+          }}
+        >
+          Auth
+        </Button>
       </Tooltip>
     );
   } else {
     return (
       <Tooltip title="Auth">
-        <Button >{props.timeForAuth}s Remain</Button>
+        <Button>{time}s Remain</Button>
       </Tooltip>
     );
   }
@@ -75,7 +92,7 @@ export default function LoginBox() {
     authCode: "",
     password: "",
     showPassword: false,
-    canAuth: true,
+    canAuth: true
   });
 
   const handleChange = (prop: keyof State) => (
@@ -94,8 +111,10 @@ export default function LoginBox() {
   };
 
   const handleClickAuthCode = () => {
+    setValues({ ...values, canAuth: !values.canAuth });
+    console.log("AUTH CLICK!");
     //TODO
-  }
+  };
 
   return (
     <div className={classes.root}>
@@ -112,10 +131,15 @@ export default function LoginBox() {
         <InputLabel htmlFor="adornment-authcode">authCode</InputLabel>
         <Input
           id="adornment-code"
-          value={values.phoneNum}
+          value={values.authCode}
           onChange={handleChange("authCode")}
           startAdornment={<InputAdornment position="start"></InputAdornment>}
-          endAdornment={<Tooltip title="time"><Button>{}</Button></Tooltip>}
+          endAdornment={
+            <AuthTimeButton
+              canAuth={values.canAuth}
+              handleClick={handleClickAuthCode}
+            />
+          }
         ></Input>
       </FormControl>
       <FormControl className={clsx(classes.margin, classes.textField)}>
