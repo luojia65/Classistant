@@ -1,14 +1,33 @@
-# react-redux-typescript-example
+# classAssi
 
 > Demonstrating the common patterns when using React, Redux v4, and TypeScript.
 
-**Example deployment:** [(link)](https://react-redux-typescript-example.now.sh/)
+```
+.
+|-- components
+|   |-- Footer.tsx
+|   `-- Header.tsx
+|-- containers
+|   `-- LayoutContainer.tsx
+|-- pages
+|   |-- index.tsx
+|   |-- matches.tsx
+|   `-- heroes.tsx
+|-- store
+|   |-- heroes
+|   |   |-- actions.ts
+|   |   |-- reducer.ts
+|   |   `-- types.ts
+|   |-- layout
+|   |   |-- actions.ts
+|   |   |-- reducer.ts
+|   |   `-- types.ts
+|   `-- index.ts
+|-- ...
+|-- index.tsx
+`-- types.d.ts
+```
 
-Welcome to the Redux 4 + TypeScript 3.3 example! This example site shows you the ideal project structure, recommended libraries, as well as design pattern on writing type-safe React + Redux app with TypeScript.
-
-This project is intended as a supplement to [this post](https://resir014.xyz/posts/2018/07/06/redux-4-plus-typescript/). To demonstrate it, I created a website which pulls data from the [OpenDota API](https://docs.opendota.com), and display information like professional teams, heroes, as well as top players by hero. This will also demonstrate how to structure your stores for each feature/module in a Redux-enabled app.
-
-This project was bootstrapped with [Create React App](https://create-react-app.dev/).
 
 ## Getting started
 
