@@ -12,6 +12,8 @@ mod db;
 mod data_user;
 mod group;
 
+mod http_api;
+
 // https://api.mywebsite.com/v1
 fn main() {
     let matches = clap::App::new(clap::crate_name!())
@@ -59,7 +61,9 @@ fn main() {
                     .secure(false))) // todo: https
                 // todo: reformat using RESTful
                 // .route("/v1/users", web::post().to(auth::register))
-                // .route("/v1/users/{}", web::get().to(auth::login))
+                // .route("/v1/users/{}/auth", web::get().to(auth::login))
+                // .route("/v1/users/{}/auth", web::put().to(auth::change_password))
+                // .route("/v1/users/{}/auth", web::delete().to(auth::unregister))
                 // .route("/v1/groups", web::post().to(group::create))
                 // .route("/v1/groups", web::delete().to(group::delete))
                 // .route("/v1/groups/{}/members", web::get().to())
