@@ -12,6 +12,7 @@ mod db;
 mod data_user;
 mod group;
 
+// https://api.mywebsite.com/v1
 fn main() {
     let matches = clap::App::new(clap::crate_name!())
         .version(clap::crate_version!())
@@ -55,8 +56,22 @@ fn main() {
                 .wrap(IdentityService::new(CookieIdentityPolicy::new(&[0; 64]) 
                     .name("classistant-identity")
                     .max_age(max_alive_secs as i64)
-                    .secure(false)))
-                .route("/api/{path}", web::get().to(|| HttpResponse::MethodNotAllowed().body("use POST")))
+                    .secure(false))) // todo: https
+                // todo: reformat using RESTful
+                // .route("/v1/users", web::post().to(auth::register))
+                // .route("/v1/users/{}", web::get().to(auth::login))
+                // .route("/v1/groups", web::post().to(group::create))
+                // .route("/v1/groups", web::delete().to(group::delete))
+                // .route("/v1/groups/{}/members", web::get().to())
+                // .route("/v1/groups/{}/members/{}", web::put().to(group::modify_member))
+                // .route("/v1/groups/{}/members/{}", web::delete().to(group::remove_member))
+                // .route("/v1/groups/{}/owner", web::put().to(group::transfer_owner))
+                // .route("/v1/users/{}/data", web::get().to(data_user::get))
+                // .route("/v1/users/{}/data", web::put().to(data_user::modify))
+                // .route("/v1/users/{}/data", web::delete().to(data_user::delete))
+                // .route("/v1/users/{}/data/{}", web::get().to(data_user::get_one))
+                // .route("/v1/users/{}/data/{}", web::put().to(data_user::modify_one))
+                // .route("/v1/users/{}/data/{}", web::delete().to(data_user::delete_one))
                 .route("/api/v1.auth.register", web::post().to(auth::register))
                 .route("/api/v1.auth.login", web::post().to(auth::login))
                 .route("/api/v1.auth.logout", web::post().to(auth::logout))
