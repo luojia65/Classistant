@@ -19,10 +19,17 @@ pub enum Database {
     MySQL(impl_mysql::MySQLDb),
 }
 
+#[allow(irrefutable_let_patterns)]
 impl Database {
-    pub fn register_user_by_nick(
-        nickname: String
-    ) -> io::Result<()> {
-        Ok(())
+    pub fn register_user_by_nickname(
+        &self,
+        nickname: &str,
+        hash: &str,
+    ) -> crate::Result<Option<u64>> {
+        if let Database::MySQL(db) = &self {
+            db.register_user_by_nickname(nickname, hash)
+        } else {
+            unreachable!()
+        }
     }
 }

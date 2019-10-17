@@ -7,16 +7,19 @@ use std::sync::Arc;
 #[macro_use]
 mod macros;
 
-mod site_config;
 mod auth;
 mod auth_hash;
 mod identity;
-mod db;
 mod data_user;
 mod group;
 
+mod site_config;
+mod db;
 mod http_api;
 mod app_api;
+mod result;
+
+pub use result::{Error, Result};
 
 // https://api.mywebsite.com/v1
 fn main() {

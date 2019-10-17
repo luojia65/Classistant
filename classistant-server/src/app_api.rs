@@ -1,12 +1,13 @@
 pub mod api_191017;
 
-pub fn get(version: &str) -> Option<AppApi> {
+pub fn get(version: &str) -> AppApi {
     if version == api_191017::VERSION {
-        return Some(AppApi::Api191017(api_191017::Api))
+        return AppApi::Api191017
     }
-    return None;
+    return AppApi::Invalid;
 }
 
 pub enum AppApi {
-    Api191017(api_191017::Api)
+    Api191017,
+    Invalid,
 }
