@@ -100,7 +100,7 @@ const mapStateToProps = ({ heroes }: ApplicationState) => ({
 })
 
 // mapDispatchToProps is especially useful for constraining our actions to the connected component.
-// You can access these via `this.props`.
+// You can access these via `this.props`. 
 const mapDispatchToProps = {
   fetchRequest
 }
