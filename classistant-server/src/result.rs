@@ -3,11 +3,12 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum Error {
+    InvalidReturnId,
+    EmptyResponse,
+    FieldNotFound,
     Io(io::Error),
     MySQL(mysql::Error),
     Base64Decode(base64::DecodeError),
-    InvalidReturnId,
-    None,
 }
 
 impl From<io::Error> for Error {

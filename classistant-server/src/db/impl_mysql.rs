@@ -13,9 +13,9 @@ impl MySQLDb {
         let mut stmt = conn.prepare("CALL PUserRegisterByNickname(?, ?)")?;
         let mut ans_iter = stmt.execute((nickname,))?;
         let ans = if let Some(ans) = ans_iter.next() { ans } 
-        else { return Err(crate::Error::None) }?;
+        else { return Err(crate::Error::EmptyResponse) }?;
         let return_id: u64 = if let Some(ans) = ans.get("return_id") { ans }
-        else { return Err(crate::Error::None) };
+        else { return Err(crate::Error::FieldNotFound) };
         if return_id != 0 {
             if return_id == 1 {
                 return Ok(None)
@@ -23,7 +23,7 @@ impl MySQLDb {
             return Err(crate::Error::InvalidReturnId)
         }
         let user_id: u64 = if let Some(ans) = ans.get("user_id") { ans }
-        else { return Err(crate::Error::None) };
+        else { return Err(crate::Error::FieldNotFound) };
         let hash_bytes = base64::decode(hash_base64)?;
         let mut conn = self.pool.get_conn()?;
         let mut stmt = conn.prepare("CALL PUserRegisterFillHash(?, ?)")?;
