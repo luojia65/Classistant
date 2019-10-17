@@ -20,7 +20,7 @@ pub struct RegisterResponse {
 
 pub fn register(
     db: web::Data<db::Database>,
-    params: web::Json<RegisterRequest>,
+    params: web::Form<RegisterRequest>,
 ) -> HttpResponse {
     if let AppApi::Api191017 = app_api::get(&params.api_version) {
         match app_api::api_191017::register_user_by_nickname(&db, &params.nickname, &params.hash) {
