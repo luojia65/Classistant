@@ -4,6 +4,9 @@ use actix_identity::{CookieIdentityPolicy, IdentityService};
 use std::thread;
 use std::sync::Arc;
 
+#[macro_use]
+mod macros;
+
 mod site_config;
 mod auth;
 mod auth_hash;
@@ -13,6 +16,7 @@ mod data_user;
 mod group;
 
 mod http_api;
+mod app_api;
 
 // https://api.mywebsite.com/v1
 fn main() {
@@ -60,7 +64,7 @@ fn main() {
                     .max_age(max_alive_secs as i64)
                     .secure(false))) // todo: https
                 // todo: reformat using RESTful
-                .route("/users", web::post().to(http_api::auth::register))
+                .route("/users", web::post().to(http_api::users::register))
                 // .route("/users/{}", web::delete().to(auth::unregister))
                 // .route("/sessions", web::post().to(auth::login))
                 // .route("/sessions", web::delete().to(auth::logout))
