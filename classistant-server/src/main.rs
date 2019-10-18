@@ -69,7 +69,7 @@ fn main() {
                 // todo: reformat using RESTful
                 .route("/users", web::post().to(http_api::users::register))
                 // .route("/users/{}", web::delete().to(auth::unregister))
-                // .route("/sessions", web::post().to(auth::login))
+                .route("/sessions", web::post().to(http_api::users::login))
                 // .route("/sessions", web::delete().to(auth::logout))
                 // .route("/users/{}/data", web::get().to(data_user::get))
                 // .route("/users/{}/data", web::post().to(data_user::create))

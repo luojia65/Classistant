@@ -23,11 +23,23 @@ pub enum Database {
 impl Database {
     pub fn register_user_by_nickname(
         &self,
-        nickname: &str,
-        hash: &str,
-    ) -> crate::Result<Option<u64>> {
+        nickname_hash: &[u8],
+        hash_bytes: &[u8],
+    ) -> crate::Result<u64> {
         if let Database::MySQL(db) = &self {
-            db.register_user_by_nickname(nickname, hash)
+            db.register_user_by_nickname(nickname_hash, hash_bytes)
+        } else {
+            unreachable!()
+        }
+    }
+
+    pub fn login_by_auth_id(
+        &self,
+        auth_id_hash: &[u8],
+        hash_bytes: &[u8],
+    ) -> crate::Result<u64> {
+        if let Database::MySQL(db) = &self {
+            db.login_by_auth_id(auth_id_hash, hash_bytes)
         } else {
             unreachable!()
         }
