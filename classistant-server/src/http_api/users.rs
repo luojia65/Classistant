@@ -25,12 +25,12 @@ pub fn register(
     if let AppApi::Api191017 = app_api::get(&params.api_version) {
         match app_api::api_191017::register_user_by_nickname(&db, &params.nickname, &params.hash) {
             Ok(Some(user_id)) => 
-                HttpResponse::Ok().json(RegisterResponse {
+                HttpResponse::Created().json(RegisterResponse {
                     user_id: Some(user_id),
                     error_message: None,
                 }),
             Ok(None) => 
-                HttpResponse::Ok().json(RegisterResponse {
+                HttpResponse::NotModified().json(RegisterResponse {
                     user_id: None,
                     error_message: Some("user already exists".to_string()),
                 }),

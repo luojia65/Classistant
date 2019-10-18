@@ -10,7 +10,7 @@ impl MySQLDb {
         hash_base64: &str,
     ) -> crate::Result<Option<u64>> {
         let mut conn = self.pool.get_conn()?;
-        let mut stmt = conn.prepare("CALL PUserRegisterByNickname(?, ?)")?;
+        let mut stmt = conn.prepare("CALL PUserRegisterByNickname(?)")?;
         let mut ans_iter = stmt.execute((nickname,))?;
         let ans = if let Some(ans) = ans_iter.next() { ans } 
         else { return Err(crate::Error::EmptyResponse) }?;
