@@ -101,3 +101,31 @@ pub fn login(
     }
 }
 
+#[derive(Deserialize)]
+pub struct LogoutRequest {
+    api_version: String,
+}
+
+#[derive(Serialize)]
+pub struct LogoutResponse {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error_message: Option<&'static str>,
+}
+
+pub fn logout(
+    id: Identity, 
+    params: web::Form<LogoutRequest>
+) -> HttpResponse {
+    if let AppApi::Api191017 = app_api::get(&params.api_version) {
+        if id.identity().is_some() {
+            id.forget();
+        } else {
+            return HttpResponse::Unauthorized().json(LogoutResponse {
+                error_message: Some("not logged in")
+            })
+        }
+        HttpResponse::Ok().json(LogoutResponse { error_message: None })
+    } else {
+        invalid_api!(RegisterResponse)
+    }
+}

@@ -1,5 +1,3 @@
-use std::io;
-
 mod impl_mysql;
 
 pub(crate) fn connect_mysql(params: Vec<&str>) -> Database {

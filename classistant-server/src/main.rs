@@ -70,7 +70,7 @@ fn main() {
                 .route("/users", web::post().to(http_api::users::register))
                 // .route("/users/{}", web::delete().to(auth::unregister))
                 .route("/sessions", web::post().to(http_api::users::login))
-                // .route("/sessions", web::delete().to(auth::logout))
+                .route("/sessions", web::delete().to(http_api::users::logout))
                 // .route("/users/{}/data", web::get().to(data_user::get))
                 // .route("/users/{}/data", web::post().to(data_user::create))
                 // .route("/users/{}/data", web::put().to(data_user::modify))
