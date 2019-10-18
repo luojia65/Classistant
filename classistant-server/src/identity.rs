@@ -7,17 +7,18 @@ lazy_static::lazy_static! {
 
 #[derive(Serialize, Deserialize)]
 pub struct IdentityInner {
-    uid: u64,
-    #[serde(rename = "es")]
+    #[serde(rename = "u")]
+    user_id: u64,
+    #[serde(rename = "e")]
     expire: u64,
 }
 
 impl IdentityInner {
     #[inline] 
-    pub fn new_uid(uid: u64, expire_in_secs: u64) -> IdentityInner {
+    pub fn new_uid(user_id: u64, expire_in_secs: u64) -> IdentityInner {
         let expire = Instant::now() + Duration::from_secs(expire_in_secs) - *INSTANT_BEGIN;
         let expire = expire.as_secs();
-        IdentityInner { uid, expire }
+        IdentityInner { user_id, expire }
     }
 
     #[inline]
@@ -31,8 +32,8 @@ impl IdentityInner {
     }
 
     #[inline]
-    pub fn uid(&self) -> u64 {
-        self.uid
+    pub fn user_id(&self) -> u64 {
+        self.user_id
     }
 
     pub fn is_expired(&self) -> bool {

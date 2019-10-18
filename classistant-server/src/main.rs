@@ -7,7 +7,6 @@ use std::sync::Arc;
 #[macro_use]
 mod macros;
 
-mod auth;
 mod auth_hash;
 mod identity;
 mod data_user;
@@ -75,13 +74,9 @@ fn main() {
                 // .route("/users/{}/data", web::post().to(data_user::create))
                 // .route("/users/{}/data", web::put().to(data_user::modify))
                 // .route("/users/{}/data", web::delete().to(data_user::delete))
-                // .route("/users/{}/data/{}", web::get().to(data_user::get_one))
-                // .route("/users/{}/data/{}", web::post().to(data_user::create_one))
-                // .route("/users/{}/data/{}", web::put().to(data_user::modify_one))
-                // .route("/users/{}/data/{}", web::delete().to(data_user::delete_one))
                 // .route("/users/{}/groups", web::get().to(group::get_by_user))
-                // .route("/groups", web::post().to(group::create))
-                // .route("/groups", web::delete().to(group::delete))
+                .route("/groups", web::post().to(http_api::groups::create))
+                // .route("/groups/{}", web::delete().to(group::delete))
                 // .route("/groups/{}/members", web::get().to(group::members))
                 // .route("/groups/{}/members/{}", web::put().to(group::modify_member))
                 // .route("/groups/{}/members/{}", web::delete().to(group::remove_member))

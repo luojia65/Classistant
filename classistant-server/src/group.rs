@@ -47,7 +47,7 @@ pub fn create(id: Identity, db: web::Data<mysql::Pool>, info: web::Json<CreateRe
         },
         _ => return create_failed(41, "no identity exist"),
     };
-    if id.uid() != info.owner_uid {
+    if id.user_id() != info.owner_uid {
         return create_failed(42, "permission denied");
     }
     if id.is_expired() {
@@ -135,7 +135,7 @@ pub fn modify_member(
         },
         _ => return modify_failed(41, "no identity exist"),
     };
-    if id.uid() != info.operator_uid {
+    if id.user_id() != info.operator_uid {
         return modify_failed(42, "permission denied");
     }
     if id.is_expired() {
@@ -236,7 +236,7 @@ pub fn remove_member(
         },
         _ => return remove_failed(41, "no identity exist"),
     };
-    if id.uid() != info.operator_uid {
+    if id.user_id() != info.operator_uid {
         return remove_failed(42, "permission denied");
     }
     if id.is_expired() {
@@ -332,7 +332,7 @@ pub fn transfer_owner(
         },
         _ => return transfer_owner_failed(41, "no identity exist"),
     };
-    if id.uid() != info.src_uid {
+    if id.user_id() != info.src_uid {
         return transfer_owner_failed(42, "permission denied");
     }
     if id.is_expired() {
@@ -418,7 +418,7 @@ pub fn delete(
         },
         _ => return delete_failed(41, "no identity exist"),
     };
-    if id.uid() != info.operator_uid {
+    if id.user_id() != info.operator_uid {
         return delete_failed(42, "permission denied");
     }
     if id.is_expired() {

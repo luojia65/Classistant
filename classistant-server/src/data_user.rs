@@ -42,7 +42,7 @@ pub fn modify(id: Identity, db: web::Data<mysql::Pool>, info: web::Json<ModifyRe
         },
         _ => return modify_failed(41, "no identity exist", state_map),
     };
-    if id.uid() != info.uid {
+    if id.user_id() != info.uid {
         return modify_failed(42, "permission denied", state_map);
     }
     if id.is_expired() {
@@ -141,7 +141,7 @@ pub fn get(id: Identity, db: web::Data<mysql::Pool>, info: web::Json<GetRequest>
         },
         _ => return get_failed(41, "no identity exist"),
     };
-    if id.uid() != info.uid {
+    if id.user_id() != info.uid {
         return get_failed(42, "permission denied");
     }
     if id.is_expired() {
