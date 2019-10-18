@@ -21,3 +21,10 @@ pub fn login_by_auth_id(
     let hash_bytes = base64::decode(hash_base64)?;
     db.login_by_auth_id(&buf, &hash_bytes)
 }
+    
+pub fn group_create(
+    db: &crate::db::Database,
+    user_id: u64,
+) -> crate::Result<u64> {
+    db.group_create(user_id)
+}

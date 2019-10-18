@@ -54,4 +54,18 @@ impl MySQLDb {
         else { return Err(crate::Error::FieldNotFound) };
         Ok(user_id)
     }
+
+    pub fn group_create(
+        &self,
+        user_id: u64,
+    ) -> crate::Result<u64> {
+        let mut conn = self.pool.get_conn()?;
+        let mut stmt = conn.prepare("CALL PGroupCreate(?)")?;
+        let mut ans_iter = stmt.execute((user_id,))?;
+        let ans = if let Some(ans) = ans_iter.next() { ans } 
+        else { return Err(crate::Error::EmptyResponse) }?;
+        let group_id: u64 = if let Some(ans) = ans.get("group_id") { ans }
+        else { return Err(crate::Error::FieldNotFound) };
+        Ok(group_id)
+    }
 }

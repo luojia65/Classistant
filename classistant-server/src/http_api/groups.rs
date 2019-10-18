@@ -1,10 +1,8 @@
 use actix_web::{web, HttpResponse};
 use actix_identity::Identity;
 use serde::{Serialize, Deserialize};
-use std::sync::Arc;
 use crate::app_api::{self, AppApi};
 use crate::db::Database;
-use crate::site_config::SiteConfig;
 use crate::http_api::ErrorResponse;
 
 #[derive(Deserialize)]
@@ -24,7 +22,16 @@ pub fn create(
 ) -> HttpResponse {
     if let AppApi::Api191017 = app_api::get(&params.api_version) {
         let user_id = identity_user_id!(id);
-        unimplemented!()
+        match app_api::api_191017::group_create(&db, user_id) {
+            Ok(group_id) => 
+                HttpResponse::Created().json(CreateResponse {
+                    group_id
+                }),
+            Err(err) => 
+                HttpResponse::InternalServerError().json(ErrorResponse {
+                    error_message: format!("internal error: {}", err),
+                }),
+        }
     } else {
         invalid_api!()
     }

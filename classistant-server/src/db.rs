@@ -42,4 +42,16 @@ impl Database {
             unreachable!()
         }
     }
+    
+    pub fn group_create(
+        &self,
+        user_id: u64,
+    ) -> crate::Result<u64> {
+        if let Database::MySQL(db) = &self {
+            db.group_create(user_id)
+        } else {
+            unreachable!()
+        }
+    }
+
 }
