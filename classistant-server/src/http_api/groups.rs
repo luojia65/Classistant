@@ -33,3 +33,30 @@ pub fn create(
         invalid_api!()
     }
 }
+
+#[derive(Deserialize)]
+pub struct DeleteRequest {
+    api_version: String,
+}
+
+#[derive(Serialize, Default)]
+pub struct DeleteResponse {}
+
+pub fn delete(
+    id: Identity, 
+    db: web::Data<Database>, 
+    info: web::Path<(u64,)>,
+    params: web::Form<DeleteRequest>
+) -> HttpResponse {
+    if let AppApi::Api191017 = app_api::get(&params.api_version) {
+        let user_id = identity_user_id!(id);
+        match app_api::api_191017::group_delete(&db, info.0, user_id) {
+            Ok(()) => HttpResponse::Ok().json(DeleteResponse {}),
+            Err(crate::Error::GroupNotExists) => forbidden!("group not exists".to_string()),
+            Err(crate::Error::PermissionDenied) => forbidden!("permission denied".to_string()),
+            Err(err) => internal!(err),
+        }
+    } else {
+        invalid_api!()
+    }
+}

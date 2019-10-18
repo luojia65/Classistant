@@ -68,4 +68,27 @@ impl MySQLDb {
         else { return Err(crate::Error::FieldNotFound) };
         Ok(group_id)
     }
+
+    pub fn group_delete(
+        &self,
+        group_id: u64,
+        user_id: u64,
+    ) -> crate::Result<()> {
+        let mut conn = self.pool.get_conn()?;
+        let mut stmt = conn.prepare("CALL PGroupDelete(?, ?)")?;
+        let mut ans_iter = stmt.execute((group_id, user_id))?;
+        let ans = if let Some(ans) = ans_iter.next() { ans } 
+        else { return Err(crate::Error::EmptyResponse) }?;
+        let return_id: u64 = if let Some(ans) = ans.get("return_id") { ans }
+        else { return Err(crate::Error::FieldNotFound) };
+        if return_id != 0 {
+            if return_id == 2 {
+                return Err(crate::Error::GroupNotExists)
+            } else if return_id == 1 {
+                return Err(crate::Error::PermissionDenied)
+            }
+            return Err(crate::Error::InvalidReturnId)
+        }
+        Ok(())
+    }
 }

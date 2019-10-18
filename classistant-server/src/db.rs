@@ -42,7 +42,7 @@ impl Database {
             unreachable!()
         }
     }
-    
+
     pub fn group_create(
         &self,
         user_id: u64,
@@ -54,4 +54,15 @@ impl Database {
         }
     }
 
+    pub fn group_delete(
+        &self,
+        group_id: u64,
+        user_id: u64,
+    ) -> crate::Result<()> { 
+        if let Database::MySQL(db) = &self {
+            db.group_delete(group_id, user_id)
+        } else {
+            unreachable!()
+        }
+    }
 }

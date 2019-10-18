@@ -28,3 +28,11 @@ pub fn group_create(
 ) -> crate::Result<u64> {
     db.group_create(user_id)
 }
+
+pub fn group_delete(
+    db: &crate::db::Database,
+    group_id: u64,
+    user_id: u64,
+) -> crate::Result<()> {
+    db.group_delete(group_id, user_id)
+}

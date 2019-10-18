@@ -76,7 +76,7 @@ fn main() {
                 // .route("/users/{}/data", web::delete().to(data_user::delete))
                 // .route("/users/{}/groups", web::get().to(group::get_by_user))
                 .route("/groups", web::post().to(http_api::groups::create))
-                // .route("/groups/{}", web::delete().to(group::delete))
+                .route("/groups/{id}", web::delete().to(http_api::groups::delete))
                 // .route("/groups/{}/members", web::get().to(group::members))
                 // .route("/groups/{}/members/{}", web::put().to(group::modify_member))
                 // .route("/groups/{}/members/{}", web::delete().to(group::remove_member))

@@ -8,6 +8,8 @@ pub enum Error {
     FieldNotFound,
     UserAlreadyExists,
     UserNotExists,
+    GroupNotExists,
+    PermissionDenied,
     WrongPassword,
     Io(io::Error),
     MySQL(mysql::Error),
