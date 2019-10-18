@@ -1,3 +1,5 @@
+pub mod data;
+
 use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
 use crate::app_api::{self, AppApi};

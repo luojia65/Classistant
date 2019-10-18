@@ -1,3 +1,5 @@
+pub mod members;
+
 use actix_web::{web, HttpResponse};
 use actix_identity::Identity;
 use serde::{Serialize, Deserialize};
