@@ -36,3 +36,12 @@ pub fn group_delete(
 ) -> crate::Result<()> {
     db.group_delete(group_id, user_id)
 }
+
+pub fn group_transfer_owner(
+    db: &crate::db::Database,
+    group_id: u64,
+    src_user_id: u64,
+    dest_user_id: u64,
+) -> crate::Result<()> {
+    db.group_transfer_owner(group_id, src_user_id, dest_user_id)
+}

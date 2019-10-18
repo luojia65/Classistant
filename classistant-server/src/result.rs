@@ -11,6 +11,8 @@ pub enum Error {
     GroupNotExists,
     PermissionDenied,
     WrongPassword,
+    OperatorUserNotInGroup,
+    DestUserNotInGroup,
     Io(io::Error),
     MySQL(mysql::Error),
     Base64Decode(base64::DecodeError),

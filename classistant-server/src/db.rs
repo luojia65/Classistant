@@ -65,4 +65,17 @@ impl Database {
             unreachable!()
         }
     }
+
+    pub fn group_transfer_owner(
+        &self,
+        group_id: u64,
+        src_user_id: u64,
+        dest_user_id: u64,
+    ) -> crate::Result<()> {
+        if let Database::MySQL(db) = &self {
+            db.group_transfer_owner(group_id, src_user_id, dest_user_id)
+        } else {
+            unreachable!()
+        }
+    }
 }

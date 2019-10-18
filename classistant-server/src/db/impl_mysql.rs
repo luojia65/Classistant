@@ -91,4 +91,30 @@ impl MySQLDb {
         }
         Ok(())
     }
+    
+    pub fn group_transfer_owner(
+        &self,
+        group_id: u64,
+        src_user_id: u64,
+        dest_user_id: u64,
+    ) -> crate::Result<()> {
+        let mut conn = self.pool.get_conn()?;
+        let mut stmt = conn.prepare("CALL PGroupTransferOwner(?, ?)")?;
+        let mut ans_iter = stmt.execute((group_id, src_user_id, dest_user_id))?;
+        let ans = if let Some(ans) = ans_iter.next() { ans } 
+        else { return Err(crate::Error::EmptyResponse) }?;
+        let return_id: u64 = if let Some(ans) = ans.get("return_id") { ans }
+        else { return Err(crate::Error::FieldNotFound) };
+        if return_id != 0 {
+            if return_id == 2 {
+                return Err(crate::Error::OperatorUserNotInGroup)
+            } else if return_id == 1 {
+                return Err(crate::Error::PermissionDenied)
+            } else if return_id == 3 {
+                return Err(crate::Error::DestUserNotInGroup)
+            }
+            return Err(crate::Error::InvalidReturnId)
+        }
+        Ok(())
+    }
 }

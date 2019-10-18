@@ -84,7 +84,7 @@ fn main() {
                 .route("/groups/{group_id}/members/{user_id}", web::put().to(http_api::groups::members::modify))
                 .route("/groups/{group_id}/members/{user_id}", web::delete().to(http_api::groups::members::remove))
                 // .route("/groups/{group_id}/owner", web::get().to(http_api::groups::owner::get))
-                // .route("/groups/{group_id}/owner", web::put().to(http_api::groups::owner::transfer))
+                .route("/groups/{group_id}/owner", web::put().to(http_api::groups::owner::transfer))
                 .default_service(web::route().to(|| HttpResponse::NotFound()))
         })
         .bind(api_bind_addr).expect("bind API server")
