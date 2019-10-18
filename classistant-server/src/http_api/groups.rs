@@ -27,10 +27,7 @@ pub fn create(
                 HttpResponse::Created().json(CreateResponse {
                     group_id
                 }),
-            Err(err) => 
-                HttpResponse::InternalServerError().json(ErrorResponse {
-                    error_message: format!("internal error: {}", err),
-                }),
+            Err(err) => internal!(err),
         }
     } else {
         invalid_api!()

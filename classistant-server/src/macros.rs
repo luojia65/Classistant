@@ -1,14 +1,4 @@
 #[macro_export(local_inner_macros)]
-macro_rules! invalid_api {
-    () => {
-        actix_web::HttpResponse::NotImplemented().json(crate::http_api::ErrorResponse {
-            error_message: "incorrect api version".to_string(),
-            .. Default::default()
-        }) 
-    };
-}
-
-#[macro_export(local_inner_macros)]
 macro_rules! identity_user_id {
     ($id: expr) => {{
         let id = if let Some(id) = $id.identity() { id } else {
@@ -30,4 +20,32 @@ macro_rules! identity_user_id {
         }
         id.user_id()
     }};
+}
+
+#[macro_export(local_inner_macros)]
+macro_rules! invalid_api {
+    () => {
+        actix_web::HttpResponse::NotImplemented().json(crate::http_api::ErrorResponse {
+            error_message: "incorrect api version".to_string(),
+            .. Default::default()
+        }) 
+    };
+}
+
+#[macro_export(local_inner_macros)]
+macro_rules! forbidden {
+    ($msg: expr) => {
+        actix_web::HttpResponse::Forbidden().json(crate::http_api::ErrorResponse {
+            error_message: $msg,
+        })
+    };
+}
+
+#[macro_export(local_inner_macros)]
+macro_rules! internal {
+    ($err: expr) => {
+        actix_web::HttpResponse::InternalServerError().json(crate::http_api::ErrorResponse {
+            error_message: std::format!("internal error: {}", $err),
+        })
+    };
 }

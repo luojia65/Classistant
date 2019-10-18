@@ -30,14 +30,8 @@ pub fn register(
                 HttpResponse::Created().json(RegisterResponse {
                     user_id
                 }),
-            Err(crate::Error::UserAlreadyExists) => 
-                HttpResponse::Forbidden().json(ErrorResponse {
-                    error_message: "user already exists".to_string(),
-                }),
-            Err(err) => 
-                HttpResponse::InternalServerError().json(ErrorResponse {
-                    error_message: format!("internal error: {}", err),
-                }),
+            Err(crate::Error::UserAlreadyExists) => forbidden!("user already exists".to_string()),
+            Err(err) => internal!(err)
         }
     } else {
         invalid_api!()
@@ -71,18 +65,9 @@ pub fn login(
                     user_id,
                 })
             }
-            Err(crate::Error::UserNotExists) => 
-                HttpResponse::Forbidden().json(ErrorResponse {
-                    error_message: "user not exists".to_string(),
-                }),
-            Err(crate::Error::WrongPassword) => 
-                HttpResponse::Forbidden().json(ErrorResponse {
-                    error_message: "wrong password".to_string(),
-                }),
-            Err(err) => 
-                HttpResponse::InternalServerError().json(ErrorResponse {
-                    error_message: format!("internal error: {}", err),
-                }),
+            Err(crate::Error::UserNotExists) => forbidden!("user not exists".to_string()),
+            Err(crate::Error::WrongPassword) => forbidden!("wrong password".to_string()),
+            Err(err) => internal!(err)
         }
     } else {
         invalid_api!()
