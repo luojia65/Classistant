@@ -34,7 +34,7 @@ pub fn register(
                     error_message: None,
                 }),
             Err(crate::Error::UserAlreadyExists) => 
-                HttpResponse::Accepted().json(RegisterResponse {
+                HttpResponse::Forbidden().json(RegisterResponse {
                     user_id: None,
                     error_message: Some("user already exists".to_string()),
                 }),
@@ -81,7 +81,7 @@ pub fn login(
                 })
             }
             Err(crate::Error::UserNotExists) => 
-                HttpResponse::Accepted().json(LoginResponse {
+                HttpResponse::Forbidden().json(LoginResponse {
                     user_id: None,
                     error_message: Some("user not exists".to_string()),
                 }),
