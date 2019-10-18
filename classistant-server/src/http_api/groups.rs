@@ -1,4 +1,5 @@
 pub mod members;
+pub mod owner;
 
 use actix_web::{web, HttpResponse};
 use actix_identity::Identity;
