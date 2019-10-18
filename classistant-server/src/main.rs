@@ -1,6 +1,9 @@
 use actix_web::{web, App, HttpServer, HttpResponse};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 
+use pest_derive::Parser;
+use pest::Parser;
+
 use std::thread;
 use std::sync::Arc;
 
@@ -89,6 +92,28 @@ fn main() {
     });
     println!("Successfully launched Classistant-Server!");
     loop {
-        // todo: there should be a console command line process
+        let mut buf = String::new();
+        std::io::stdin().read_line(&mut buf).unwrap();
+        match CommandParser::parse(Rule::command, &buf.trim()) {
+            Ok(mut pairs) => match pairs.next().map(|p| p.as_rule()) {
+                Some(Rule::cmd_stop_head) => {
+                    println!("Shutdown!");
+                    std::process::exit(0);
+                }, 
+                Some(Rule::cmd_huaji_head) => {
+                    println!("Huaji");
+                },
+                Some(Rule::EOI) => {},
+                _ => eprintln!("unreachable expression, this is a bug!")
+            },
+            Err(e) => {
+                eprintln!("err: <Console Input> {}", e);
+            }
+        }
     }
 }
+
+#[derive(Parser)]
+#[grammar = "command_line.pest"]
+struct CommandParser;
+

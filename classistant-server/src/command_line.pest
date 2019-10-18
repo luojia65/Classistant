@@ -1,0 +1,10 @@
+space_char = _{ " " | "\t" }
+space = _{ ( space_char ) * }
+end_of_command = _{ ("\r" | "\n") * ~ EOI }
+
+cmd_stop_head = { "quit" | "exit" | "stop" | "q" }
+cmd_stop = _{ cmd_stop_head }
+cmd_huaji_head = { "huaji" }
+cmd_huaji = _{ cmd_huaji_head }
+
+command = _{ SOI ~ space ~ (cmd_stop | cmd_huaji) ? ~ space ~ end_of_command }
