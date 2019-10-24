@@ -3,7 +3,15 @@ DROP PROCEDURE IF EXISTS `PUserRegister`;
 DROP PROCEDURE IF EXISTS `PUserLoginById`;
 
 -- tables & procedures
-CREATE TABLE IF NOT EXISTS `DUserAuth` (
+CREATE TABLE `DAuthId` (
+    `user_id` int(11) NOT NULL,
+    `auth_type` varchar(32) NOT NULL,
+    `auth_id` varbinary(256) NOT NULL,
+    PRIMARY KEY (`auth_type`,`user_id`),
+    KEY `index_auth_id` (`auth_id`)
+);
+
+CREATE TABLE `DAuthHash` (
     `user_id` int(11) NOT NULL AUTO_INCREMENT,
     `hash` blob,
     `date_register` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
