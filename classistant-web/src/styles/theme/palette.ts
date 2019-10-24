@@ -22,7 +22,7 @@ const palette={
     contrastText: white,
     dark: colors.green[900],
     main: colors.green[600],
-    light: colors.green[400]
+    light: colors.green[400]  
   },
   info: {
     contrastText: white,

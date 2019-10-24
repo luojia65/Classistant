@@ -7,10 +7,9 @@ import {
   Button,
   IconButton,
   TextField,
-  UILink,
-  FormHelperText,
+  Link,
   Checkbox,
-  Typography
+  Typography,
 } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 
@@ -18,9 +17,9 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {"Copyright © "}
-      <UILink color="inherit" href="https://material-ui.com/">
+      <Link color="inherit" href="https://material-ui.com/">
         Your Website
-      </UILink>{" "}
+      </Link>{" "}
       {new Date().getFullYear()}
       {"."}
     </Typography>
