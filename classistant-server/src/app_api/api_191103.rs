@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-pub const VERSION: &'static str = "2019-10-17";
-
 pub fn register_user_by_nickname(
     db: &crate::db::Database,
     nickname: &str,

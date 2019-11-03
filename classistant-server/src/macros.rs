@@ -23,16 +23,6 @@ macro_rules! identity_user_id {
 }
 
 #[macro_export(local_inner_macros)]
-macro_rules! invalid_api {
-    () => {
-        actix_web::HttpResponse::NotImplemented().json(crate::http_api::ErrorResponse {
-            error_message: "incorrect api version".to_string(),
-            .. Default::default()
-        }) 
-    };
-}
-
-#[macro_export(local_inner_macros)]
 macro_rules! forbidden {
     ($msg: expr) => {
         actix_web::HttpResponse::Forbidden().json(crate::http_api::ErrorResponse {
@@ -58,3 +48,10 @@ macro_rules! bad_request {
         })
     };
 }
+#[macro_export(local_inner_macros)]
+macro_rules! header_191103 {
+    () => {
+        actix_web::guard::Header("Classistant-Api-Version", "2019-11-03")
+    };
+}
+
