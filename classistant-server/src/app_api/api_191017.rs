@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub const VERSION: &'static str = "2019-10-17";
 
 pub fn register_user_by_nickname(
@@ -44,4 +46,12 @@ pub fn group_transfer_owner(
     dest_user_id: u64,
 ) -> crate::Result<()> {
     db.group_transfer_owner(group_id, src_user_id, dest_user_id)
+}
+
+pub fn data_get_batch(
+    db: &crate::db::Database,
+    user_id: u64,
+    keys: &[&str]
+) -> crate::Result<HashMap<String, (Vec<u8>, Vec<u8>)>> {
+    db.data_get_batch(user_id, keys)
 }

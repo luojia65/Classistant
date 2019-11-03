@@ -23,7 +23,6 @@ mod result;
 
 pub use result::{Error, Result};
 
-// https://api.mywebsite.com/v1
 fn main() {
     let matches = clap::App::new(clap::crate_name!())
         .version(clap::crate_version!())
@@ -73,10 +72,10 @@ fn main() {
                 // .route("/users/{}", web::delete().to(auth::unregister))
                 .route("/sessions", web::post().to(http_api::sessions::login))
                 .route("/sessions", web::delete().to(http_api::sessions::logout))
-                // .route("/users/{}/data", web::get().to(data_user::get))
-                // .route("/users/{}/data", web::post().to(data_user::create))
-                // .route("/users/{}/data", web::put().to(data_user::modify))
-                // .route("/users/{}/data", web::delete().to(data_user::delete))
+                .route("/data", web::get().to(http_api::data::get_batch))
+                // .route("/data", web::post().to(data_user::create))
+                // .route("/data", web::put().to(data_user::modify))
+                // .route("/data", web::delete().to(data_user::delete))
                 // .route("/users/{}/groups", web::get().to(group::get_by_user))
                 .route("/groups", web::post().to(http_api::groups::create))
                 .route("/groups/{group_id}", web::delete().to(http_api::groups::delete))

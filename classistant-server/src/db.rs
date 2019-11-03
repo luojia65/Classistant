@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 mod impl_mysql;
 
 pub(crate) fn connect_mysql(params: Vec<&str>) -> Database {
@@ -78,4 +80,17 @@ impl Database {
             unreachable!()
         }
     }
+    
+    pub fn data_get_batch(
+        &self,
+        user_id: u64,
+        keys: &[&str]
+    ) -> crate::Result<HashMap<String, (Vec<u8>, Vec<u8>)>> {
+        if let Database::MySQL(db) = &self {
+            db.data_get_batch(user_id, keys)
+        } else {
+            unreachable!()
+        }
+    }
+
 }

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Debug, Clone)]
 pub struct MySQLDb {
     pub pool: mysql::Pool
@@ -116,5 +118,26 @@ impl MySQLDb {
             return Err(crate::Error::InvalidReturnId)
         }
         Ok(())
+    }
+
+    pub fn data_get_batch(
+        &self,
+        user_id: u64,
+        keys: &[&str]
+    ) -> crate::Result<HashMap<String, (Vec<u8>, Vec<u8>)>> {
+        let mut conn = self.pool.get_conn()?;
+        let mut ret = HashMap::new();
+        let mut stmt = conn.prepare("CALL PUserDataGet(?, ?)")?;
+        for key in keys {
+            let mut ans_iter = stmt.execute((user_id, key))?;
+            let ans = if let Some(ans) = ans_iter.next() { ans } 
+            else { return Err(crate::Error::EmptyResponse) }?;
+            let data: Vec<u8> = if let Some(ans) = ans.get("data") { ans }
+            else { return Err(crate::Error::FieldNotFound) };
+            let encryption: Vec<u8> = if let Some(ans) = ans.get("encryption") { ans }
+            else { return Err(crate::Error::FieldNotFound) };
+            ret.insert(key.to_string(), (data, encryption));
+        }
+        Ok(ret)
     }
 }
