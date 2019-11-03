@@ -49,3 +49,12 @@ macro_rules! internal {
         })
     };
 }
+
+#[macro_export(local_inner_macros)]
+macro_rules! bad_request {
+    ($err: expr) => {
+        actix_web::HttpResponse::BadRequest().json(crate::http_api::ErrorResponse {
+            error_message: std::format!("bad request: {}", $err),
+        })
+    };
+}

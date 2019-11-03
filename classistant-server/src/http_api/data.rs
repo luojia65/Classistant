@@ -20,16 +20,33 @@ pub struct GetBatchResponse {
 pub fn get_batch(
     id: Identity, 
     db: web::Data<Database>,
-    params: web::Form<GetBatchRequest>,
+    params: web::Json<GetBatchRequest>,
 ) -> HttpResponse {
     if let AppApi::Api191017 = app_api::get(&params.api_version) {
         let user_id = identity_user_id!(id);
+        let mut keys_bytes_vec = Vec::new();
+        for key in params.keys.iter() {
+            let key_bytes = match base64::decode(key.as_bytes()) { 
+                Ok(ans) => ans,
+                Err(err) => return bad_request!(err) 
+            };
+            keys_bytes_vec.push(key_bytes)
+        }
         match app_api::api_191017::data_get_batch(
             &db, 
             user_id, 
-            &params.keys.iter().map(|a| a.as_str()).collect::<Vec<_>>()
+            keys_bytes_vec
         ) {
-            Ok(ret) => HttpResponse::Ok().json(GetBatchResponse { ret }),
+            Ok(ret) => {
+                let mut resp = HashMap::new();
+                for (k, (d, e)) in ret {
+                    let key_base64 = base64::encode(&k);
+                    let data_base64 = base64::encode(&d);
+                    let encryption_base64 = base64::encode(&e);
+                    resp.insert(key_base64, [data_base64, encryption_base64]);
+                }
+                HttpResponse::Ok().json(resp) 
+            },
             Err(err) => internal!(err)
         }
     } else {
