@@ -76,6 +76,8 @@ fn main() {
                     .to(http_api::sessions::logout))
                 .route("/data", web::get().guard(header_191103!())
                     .to(http_api::data::get_batch))
+                .route("/data", web::put().guard(header_191103!())
+                    .to(http_api::data::modify_batch))
                 // .route("/data", web::post().to(data_user::create))
                 // .route("/data", web::put().to(data_user::modify))
                 // .route("/data", web::delete().to(data_user::delete))

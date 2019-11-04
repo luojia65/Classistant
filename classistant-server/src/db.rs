@@ -84,8 +84,8 @@ impl Database {
     pub fn data_get_batch(
         &self,
         user_id: u64,
-        keys: Vec<Vec<u8>>
-    ) -> crate::Result<HashMap<Vec<u8>, (Vec<u8>, Vec<u8>)>> {
+        keys: Vec<String>
+    ) -> crate::Result<HashMap<String, (Vec<u8>, Vec<u8>)>> {
         if let Database::MySQL(db) = &self {
             db.data_get_batch(user_id, keys)
         } else {

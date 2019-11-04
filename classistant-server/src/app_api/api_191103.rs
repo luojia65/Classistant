@@ -49,7 +49,7 @@ pub fn group_transfer_owner(
 pub fn data_get_batch(
     db: &crate::db::Database,
     user_id: u64,
-    keys: Vec<Vec<u8>>
-) -> crate::Result<HashMap<Vec<u8>, (Vec<u8>, Vec<u8>)>> {
+    keys: Vec<String>
+) -> crate::Result<HashMap<String, (Vec<u8>, Vec<u8>)>> {
     db.data_get_batch(user_id, keys)
 }
