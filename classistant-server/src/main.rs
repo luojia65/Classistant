@@ -12,7 +12,6 @@ mod macros;
 
 mod auth_hash;
 mod identity;
-mod data_user;
 mod group;
 
 mod site_config;
