@@ -104,5 +104,16 @@ impl Database {
             unreachable!()
         }
     }
-
+    
+    pub fn data_delete_batch(
+        &self,
+        user_id: u64,
+        keys: Vec<String>
+    ) -> crate::Result<()> {
+        if let Database::MySQL(db) = &self {
+            db.data_delete_batch(user_id, keys)
+        } else {
+            unreachable!()
+        }
+    }
 }

@@ -61,3 +61,11 @@ pub fn data_modify_batch(
 ) -> crate::Result<Vec<String>> {
     db.data_modify_batch(user_id, entries)
 }
+
+pub fn data_delete_batch(
+    db: &crate::db::Database,
+    user_id: u64,
+    keys: Vec<String>
+) -> crate::Result<()> {
+    db.data_delete_batch(user_id, keys)
+}

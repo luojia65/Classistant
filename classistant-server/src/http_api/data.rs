@@ -40,7 +40,6 @@ pub fn get_batch(
     }
 }
 
-
 #[derive(Deserialize)]
 pub struct ModifyBatchRequest {
     entries: HashMap<String, (String, String)>,
@@ -75,6 +74,30 @@ pub fn modify_batch(
         entries_bytes
     ) {
         Ok(modified) => HttpResponse::Ok().json(ModifyBatchResponse { modified }),
+        Err(err) => internal!(err)
+    }
+}
+
+#[derive(Deserialize)]
+pub struct DeleteBatchRequest {
+    keys: Vec<String>,
+}
+
+#[derive(Serialize)]
+pub struct DeleteBatchResponse {}
+
+pub fn delete_batch(
+    id: Identity, 
+    db: web::Data<Database>,
+    params: web::Json<DeleteBatchRequest>,
+) -> HttpResponse {
+    let user_id = identity_user_id!(id);
+    match app_api::api_191103::data_delete_batch(
+        &db, 
+        user_id, 
+        params.keys.clone()
+    ) {
+        Ok(modified) => HttpResponse::Ok().json(DeleteBatchResponse {}),
         Err(err) => internal!(err)
     }
 }

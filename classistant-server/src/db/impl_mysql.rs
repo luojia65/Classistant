@@ -157,4 +157,18 @@ impl MySQLDb {
         }
         Ok(ret)
     }
+
+    pub fn data_delete_batch(
+        &self,
+        user_id: u64,
+        keys: Vec<String>
+    ) -> crate::Result<()> { 
+        let mut conn = self.pool.get_conn()?;
+        let mut stmt = conn.prepare("CALL PUserDataDelete(?, ?)")?;
+        for key in keys {
+            let key_bytes: [u8; 16] = md5::compute(key.clone()).into();
+            stmt.execute((user_id, &key_bytes))?;
+        }
+        Ok(())
+    }
 }
