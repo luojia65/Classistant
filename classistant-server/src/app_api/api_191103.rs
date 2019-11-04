@@ -53,3 +53,11 @@ pub fn data_get_batch(
 ) -> crate::Result<HashMap<String, (Vec<u8>, Vec<u8>)>> {
     db.data_get_batch(user_id, keys)
 }
+
+pub fn data_modify_batch(
+    db: &crate::db::Database,
+    user_id: u64,
+    entries: HashMap<String, (Vec<u8>, Vec<u8>)>,
+) -> crate::Result<Vec<String>> {
+    db.data_modify_batch(user_id, entries)
+}

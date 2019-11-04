@@ -93,4 +93,16 @@ impl Database {
         }
     }
 
+    pub fn data_modify_batch(
+        &self,
+        user_id: u64,
+        entries: HashMap<String, (Vec<u8>, Vec<u8>)>,
+    ) -> crate::Result<Vec<String>> {
+        if let Database::MySQL(db) = &self {
+            db.data_modify_batch(user_id, entries)
+        } else {
+            unreachable!()
+        }
+    }
+
 }

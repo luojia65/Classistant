@@ -141,4 +141,20 @@ impl MySQLDb {
         }
         Ok(ret)
     }
+
+    pub fn data_modify_batch(
+        &self,
+        user_id: u64,
+        entries: HashMap<String, (Vec<u8>, Vec<u8>)>,
+    ) -> crate::Result<Vec<String>> {
+        let mut conn = self.pool.get_conn()?;
+        let mut ret = Vec::new();
+        let mut stmt = conn.prepare("CALL PUserDataInsert(?, ?, ?, ?)")?;
+        for (key, (new_value, new_encrption)) in entries {
+            let key_bytes: [u8; 16] = md5::compute(key.clone()).into();
+            stmt.execute((user_id, &key_bytes, new_value, new_encrption))?;
+            ret.push(key);
+        }
+        Ok(ret)
+    }
 }
