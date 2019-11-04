@@ -160,3 +160,40 @@ BEGIN
 		SELECT 0 as `return_id`; -- success
 	END IF;
 END
+
+CREATE TABLE `DDataUser` (
+    `user_id` int(11) NOT NULL,
+    `type_id` binary(16) NOT NULL,
+    `data` blob NOT NULL,
+    `encryption` blob NOT NULL,
+    `date_modify` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `date_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `date_expired` datetime DEFAULT NULL,
+    PRIMARY KEY (`user_id`,`type_id`)
+);
+
+DROP PROCEDURE IF EXISTS `PUserDataGet`;
+
+CREATE PROCEDURE `PUserDataGet`(
+    IN `_user_id` INT,
+    IN `_type_id` BINARY(16)
+)
+BEGIN
+    SELECT `data`, `encryption` FROM `DDataUser` 
+    WHERE `user_id` = `_user_id` AND
+          `type_id` = `_type_id`;
+END;
+
+DROP PROCEDURE IF EXISTS `PUserDataInsert`;
+
+CREATE PROCEDURE `PUserDataInsert`(
+    IN `_user_id` INT,
+	IN `_type_id` BINARY(16),
+    IN `_data` BLOB,
+    IN `_encryption` BLOB
+)
+BEGIN
+    INSERT INTO `DDataUser` (`user_id`,`type_id`,`data`,`encryption`)
+    VALUES (`_user_id`,`_type_id`,`_data`,`_encryption`)
+    ON DUPLICATE KEY UPDATE `data` = `_data`, `encryption` = `_encryption`;
+END;
