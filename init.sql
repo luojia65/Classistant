@@ -39,7 +39,7 @@ BEGIN
         VALUES (`_tmp_user_id`, 'nickname', `_nickname`);
         SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`; -- success
     END IF;
-END
+END;
 
 DROP PROCEDURE IF EXISTS `PUserRegisterFillHash`;
 
@@ -50,7 +50,7 @@ CREATE PROCEDURE `PUserRegisterFillHash`(
 BEGIN 
     UPDATE `DAuthHash` SET `hash` = `_hash`
     WHERE `user_id` = `_user_id`;
-END
+END;
 
 DROP PROCEDURE IF EXISTS `PUserLoginByAuthId`;
 
@@ -79,7 +79,7 @@ BEGIN
             SELECT 0 as `return_id`, `_tmp_user_id` as `user_id`;
         END IF;
     END IF;
-END
+END;
 
 CREATE TABLE `DGroupMember` (
     `group_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -100,7 +100,7 @@ BEGIN
     INSERT INTO `DGroupMember` (`user_id`,`priv`)
     VALUES (`_creator_user_id`, 2);
     SELECT last_insert_id() as `group_id`;
-END
+END;
 
 DROP PROCEDURE IF EXISTS `PGroupTransferOwner`;
 
@@ -134,7 +134,7 @@ BEGIN
 		COMMIT;
 		SELECT 0 AS `return_id`; -- success
     END IF;
-END
+END;
 
 DROP PROCEDURE IF EXISTS `PGroupDelete`;
 
@@ -159,7 +159,7 @@ BEGIN
 		WHERE `group_id` = `_group_id` AND `date_expired` IS NULL;
 		SELECT 0 as `return_id`; -- success
 	END IF;
-END
+END;
 
 CREATE TABLE `DDataUser` (
     `user_id` int(11) NOT NULL,
@@ -181,7 +181,8 @@ CREATE PROCEDURE `PUserDataGet`(
 BEGIN
     SELECT `data`, `encryption` FROM `DDataUser` 
     WHERE `user_id` = `_user_id` AND
-          `type_id` = `_type_id`;
+          `type_id` = `_type_id` AND
+          `date_expired` IS NULL;
 END;
 
 DROP PROCEDURE IF EXISTS `PUserDataInsert`;
@@ -197,3 +198,18 @@ BEGIN
     VALUES (`_user_id`,`_type_id`,`_data`,`_encryption`)
     ON DUPLICATE KEY UPDATE `data` = `_data`, `encryption` = `_encryption`;
 END;
+
+DROP PROCEDURE IF EXISTS `PUserDataDelete`;
+
+CREATE PROCEDURE `PUserDataDelete`(
+    IN `_user_id` INT,
+	IN `_type_id` BINARY(16)
+)
+BEGIN
+	UPDATE `DDataUser` 
+	SET `date_expired` = CURRENT_TIMESTAMP()
+	WHERE `user_id` = `_user_id` AND 
+		  `type_id` = `_type_id` AND 
+          `date_expired` IS NULL;
+END;
+
