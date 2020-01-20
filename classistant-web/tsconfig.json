@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -15,24 +19,7 @@
     "noEmit": true,
     "jsx": "react"
   },
-  "types": [
-    "node",
-    "jest",
-    "lodash",
-    "react",
-    "react-dom",
-    "react-redux",
-    "redux-logger",
-    "material-ui",
-    "react-router-dom",
-    "react-router-redux",
-    "redux",
-    "binary-type-tree",
-    "redux-form",
-    "tedb",
-    "react-tap-event-plugin",
-    "react-hot-loader",
-    "material-ui-icons"
-  ],
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
