@@ -213,3 +213,23 @@ BEGIN
           `date_expired` IS NULL;
 END;
 
+CREATE TABLE `DFormType` (
+    `form_id` int(16) not null AUTO_INCREMENT,
+    `content` text not null,
+    `class` varchar(16) not null,
+    `extra` blob, /* maybe null */
+    PRIMARY KEY (`form_id`)
+);
+
+DROP PROCEDURE IF EXISTS `PFormTypeCreate`;
+
+CREATE PROCEDURE `PFormTypeCreate` (
+    IN `_content` int(16),
+    IN `_class` text,
+    IN `_extra` blob
+)
+BEGIN
+    INSERT INTO `DFormType` (`content`, `class`, `extra`)
+    VALUES (`_content`, `_class`, `_extra`);
+    SELECT last_insert_id() as `form_id`;
+END;
