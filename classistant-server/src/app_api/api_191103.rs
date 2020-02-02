@@ -69,3 +69,13 @@ pub fn data_delete_batch(
 ) -> crate::Result<()> {
     db.data_delete_batch(user_id, keys)
 }
+
+pub fn form_type_create(
+    db: &crate::db::Database,
+    perm: &str,
+    content: &str,
+    class: &str,
+    extra: &[u8],
+) -> crate::Result<u64> { 
+    db.form_type_create(perm, content, class, extra)
+}
