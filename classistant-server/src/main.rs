@@ -98,7 +98,7 @@ fn main() {
                 .route("/groups/{group_id}/owner", web::put().guard(header_191103!())
                     .to(http_api::groups::owner::transfer))
                 .route("/form", web::post().to(http_api::forms::create))
-                // .route("/form/{form_id}", web::get().to(http_api::form::get))
+                .route("/form/{form_id}", web::get().to(http_api::forms::get))
                 // .route("/form/{form_id}", web::delete().to(http_api::form::delete))
                 // .route("/form/{form_id}/fill/{user_id}", web::post().to(http_api::form::fill))
                 .default_service(web::route().to(|| HttpResponse::NotFound()))

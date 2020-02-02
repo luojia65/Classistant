@@ -47,3 +47,26 @@ pub fn create(
         Err(err) => internal!(err)
     }
 }
+
+#[derive(Deserialize)]
+pub struct GetRequest {
+    password: Option<String>,
+}
+
+#[derive(Serialize, Default)]
+pub struct GetResponse {
+    content: HashMap<String, String>,
+    class: String,
+    extra: String,
+}
+
+pub fn get(
+    id: Identity,
+    db: web::Data<Database>,
+    path: web::Path<(u64,)>,
+    params: web::Json<GetRequest>
+) -> HttpResponse {
+    let form_id = path.0;
+    
+    todo!()
+}
