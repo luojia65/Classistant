@@ -20,6 +20,7 @@ import NotificationsIcon from "@material-ui/icons/Notifications";
 import { mainListItems, secondaryListItems } from "../component/ListIterm";
 import { makeStyles } from "@material-ui/core";
 import Chart from "../component/Chart";
+import Informations from "../component/Information";
 // import Deposits from "./Deposits";
 // import Orders from "./Orders";
 
@@ -192,7 +193,11 @@ export default function Dashboard() {
               </Paper>
             </Grid>
             {/* Recent Deposits */}
-
+            <Grid item xs={12}>
+              <Paper className={classes.paper}>
+                <Informations></Informations>
+              </Paper>
+            </Grid>
             {/* Recent Orders */}
           </Grid>
           <Box pt={4}>
