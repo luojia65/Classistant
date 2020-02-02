@@ -215,6 +215,7 @@ END;
 
 CREATE TABLE `DFormType` (
     `form_id` int(16) not null AUTO_INCREMENT,
+    `perm` text not null,
     `content` text not null,
     `class` varchar(16) not null,
     `extra` blob, /* maybe null */
@@ -224,12 +225,13 @@ CREATE TABLE `DFormType` (
 DROP PROCEDURE IF EXISTS `PFormTypeCreate`;
 
 CREATE PROCEDURE `PFormTypeCreate` (
+    IN `_perm` text,
     IN `_content` int(16),
     IN `_class` text,
     IN `_extra` blob
 )
 BEGIN
-    INSERT INTO `DFormType` (`content`, `class`, `extra`)
-    VALUES (`_content`, `_class`, `_extra`);
+    INSERT INTO `DFormType` (`perm`, `content`, `class`, `extra`)
+    VALUES (`_perm`, `_content`, `_class`, `_extra`);
     SELECT last_insert_id() as `form_id`;
 END;

@@ -116,4 +116,19 @@ impl Database {
             unreachable!()
         }
     }
+
+    pub fn form_type_create(
+        &self,
+        perm: &str,
+        content: &str,
+        class: &str,
+        extra: &[u8],
+    ) -> crate::Result<u64> { 
+        if let Database::MySQL(db) = &self {
+            db.form_type_create(perm, content, class, extra)
+        } else {
+            unreachable!()
+        }
+    }
+
 }

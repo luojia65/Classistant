@@ -7,6 +7,8 @@ use pest::Parser;
 use std::thread;
 use std::sync::Arc;
 
+use log::*;
+
 #[macro_use]
 mod macros;
 
@@ -23,6 +25,8 @@ mod result;
 pub use result::{Error, Result};
 
 fn main() {
+    std::env::set_var("RUST_LOG", "trace");
+    env_logger::init();
     let matches = clap::App::new(clap::crate_name!())
         .version(clap::crate_version!())
         .author(clap::crate_authors!())
@@ -52,12 +56,12 @@ fn main() {
     let site_cfg = Arc::new(site_config::SiteConfig {
         max_alive_secs
     });
-    println!("Using MySQL database {}:{}", mysql_addr[0], mysql_addr[1]);
+    info!("Using MySQL database {}:{}", mysql_addr[0], mysql_addr[1]);
     let db = db::connect_mysql(mysql_addr);
-    println!("Connected to MySQL!");
+    info!("Connected to MySQL!");
     thread::spawn(move || {
         let site_cfg = site_cfg.clone();
-        println!("HTTP API starting at {}", api_bind_addr);
+        info!("HTTP API starting at {}", api_bind_addr);
         HttpServer::new(move || {
             App::new()
                 .data(db.clone())
@@ -93,7 +97,7 @@ fn main() {
                 // .route("/groups/{group_id}/owner", web::get().to(http_api::groups::owner::get))
                 .route("/groups/{group_id}/owner", web::put().guard(header_191103!())
                     .to(http_api::groups::owner::transfer))
-                // .route("/form", web::post().to(http_api::form::create))
+                .route("/form", web::post().to(http_api::forms::create))
                 // .route("/form/{form_id}", web::get().to(http_api::form::get))
                 // .route("/form/{form_id}", web::delete().to(http_api::form::delete))
                 // .route("/form/{form_id}/fill/{user_id}", web::post().to(http_api::form::fill))
@@ -102,24 +106,24 @@ fn main() {
         .bind(api_bind_addr).expect("bind API server")
         .run().expect("run API server");
     });
-    println!("Successfully launched Classistant-Server!");
+    info!("Successfully launched Classistant-Server");
     loop {
         let mut buf = String::new();
         std::io::stdin().read_line(&mut buf).unwrap();
         match CommandParser::parse(Rule::command, &buf.trim()) {
             Ok(mut pairs) => match pairs.next().map(|p| p.as_rule()) {
                 Some(Rule::cmd_stop_head) => {
-                    println!("Shutdown!");
+                    info!("Shutdown!");
                     std::process::exit(0);
                 }, 
                 Some(Rule::cmd_huaji_head) => {
-                    println!("Huaji");
+                    info!("Huaji");
                 },
                 Some(Rule::EOI) => {},
-                _ => eprintln!("unreachable expression, this is a bug!")
+                _ => error!("unreachable expression, this is a bug!")
             },
             Err(e) => {
-                eprintln!("err: <Console Input> {}", e);
+                error!("err: <Console Input> {}", e);
             }
         }
     }

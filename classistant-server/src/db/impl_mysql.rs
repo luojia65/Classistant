@@ -171,4 +171,21 @@ impl MySQLDb {
         }
         Ok(())
     }
+
+    pub fn form_type_create(
+        &self,
+        perm: &str,
+        content: &str,
+        class: &str,
+        extra: &[u8],
+    ) -> crate::Result<u64> { 
+        let mut conn = self.pool.get_conn()?;
+        let mut stmt = conn.prepare("CALL PFormTypeCreate(?, ?, ?, ?)")?;
+        let mut ans_iter = stmt.execute((perm, content, class, extra))?;
+        let ans = if let Some(ans) = ans_iter.next() { ans } 
+        else { return Err(crate::Error::EmptyResponse) }?;
+        let form_id: u64 = if let Some(ans) = ans.get("form_id") { ans }
+        else { return Err(crate::Error::FieldNotFound) };
+        Ok(form_id)
+    }
 }
