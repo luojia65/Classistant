@@ -1,14 +1,15 @@
 use actix_web::{web, HttpResponse};
 use actix_identity::Identity;
 use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
 use crate::app_api;
 use crate::db::Database;
 use crate::http_api::ErrorResponse;
 
 #[derive(Deserialize)]
 pub struct CreateRequest {
-    perm: String,
-    content: String, // JSON string
+    perm: HashMap<String, String>,
+    content: HashMap<String, String>, // JSON string
     class: String,
     extra: String,
 }
@@ -25,14 +26,16 @@ pub fn create(
 ) -> HttpResponse {
     let user_id = identity_user_id!(id);
     let _ = user_id; // todo: verify if user_id could create `perm`
+    let perm = serde_json::to_string(&params.perm).unwrap();
+    let content = serde_json::to_string(&params.content).unwrap();
     let extra = match base64::decode(&params.extra) { 
         Ok(ans) => ans,
         Err(err) => return bad_request!(err) 
     };
     match app_api::api_191103::form_type_create(
         &db, 
-        &params.perm,
-        &params.content,
+        &perm,
+        &content,
         &params.class,
         &extra
     ) {
