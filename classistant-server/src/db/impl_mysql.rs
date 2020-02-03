@@ -188,4 +188,13 @@ impl MySQLDb {
         else { return Err(crate::Error::FieldNotFound) };
         Ok(form_id)
     }
+
+    pub fn form_get(
+        &self,
+        user_id: u64,
+        form_id: u64,
+        password: Option<&str>
+    ) -> crate::Result<String> {
+        todo!()
+    }
 }

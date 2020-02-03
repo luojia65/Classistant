@@ -56,8 +56,6 @@ pub struct GetRequest {
 #[derive(Serialize, Default)]
 pub struct GetResponse {
     content: HashMap<String, String>,
-    class: String,
-    extra: String,
 }
 
 pub fn get(
@@ -67,6 +65,19 @@ pub fn get(
     params: web::Json<GetRequest>
 ) -> HttpResponse {
     let form_id = path.0;
-    
-    todo!()
+    let user_id = identity_user_id!(id);
+    let password = params.password.as_ref().map(|s| s.as_str());
+    match app_api::api_191103::form_get(
+        &db, 
+        user_id,
+        form_id,
+        password
+    ) {
+        Ok(content) => {
+            HttpResponse::Ok().json(GetResponse {
+                content: todo!()
+            }) 
+        },
+        Err(err) => internal!(err)
+    }
 }
