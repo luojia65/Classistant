@@ -1,10 +1,9 @@
-import React, { FunctionComponent, SFC } from "react";
+import React from "react";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
+import useFetch from "use-http";
 import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
@@ -43,10 +42,16 @@ export default function SignUp() {
     name: "",
     password: ""
   });
+  const [request, response] = useFetch(process.env.REACT_APP_SERVER);
   const handleChange = (prop: keyof IState) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setValues({ ...values, [prop]: event.target.value });
+  };
+  const handleSubmit = async (event: React.ChangeEvent<any>) => {
+    event.preventDefault();
+    await request.post("/users", values);
+    console.log(response.body);
   };
   return (
     <Container component="main" maxWidth="xs">
@@ -92,10 +97,7 @@ export default function SignUp() {
             variant="contained"
             color="primary"
             className={classes.submit}
-            onClick={event => {
-              event.preventDefault();
-              console.log(values);
-            }}
+            onClick={handleSubmit}
           >
             注册
           </Button>

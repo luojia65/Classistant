@@ -21,6 +21,7 @@ import { mainListItems, secondaryListItems } from "../component/ListIterm";
 import { makeStyles } from "@material-ui/core";
 import Chart from "../component/Chart";
 import Informations from "../component/Information";
+import AddGroup from "../component/AddGroup";
 // import Deposits from "./Deposits";
 // import Orders from "./Orders";
 
@@ -192,13 +193,16 @@ export default function Dashboard() {
                 <Chart />
               </Paper>
             </Grid>
-            {/* Recent Deposits */}
             <Grid item xs={12}>
               <Paper className={classes.paper}>
                 <Informations></Informations>
               </Paper>
             </Grid>
-            {/* Recent Orders */}
+            <Grid item xs={12}>
+              <Paper className={classes.paper}>
+                <AddGroup></AddGroup>
+              </Paper>
+            </Grid>
           </Grid>
           <Box pt={4}>
             <Copyright />
