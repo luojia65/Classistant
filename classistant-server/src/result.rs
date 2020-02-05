@@ -16,6 +16,7 @@ pub enum Error {
     Io(io::Error),
     MySQL(mysql::Error),
     Base64Decode(base64::DecodeError),
+    SerdeJson(serde_json::Error),
 }
 
 impl From<io::Error> for Error {
@@ -33,6 +34,12 @@ impl From<mysql::Error> for Error {
 impl From<base64::DecodeError> for Error {
     fn from(src: base64::DecodeError) -> Error {
         Error::Base64Decode(src)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(src: serde_json::Error) -> Error {
+        Error::SerdeJson(src)
     }
 }
 

@@ -80,11 +80,10 @@ pub fn form_type_create(
     db.form_type_create(perm, content, class, extra)
 }
 
-pub fn form_get(
+pub fn form_type_get(
     db: &crate::db::Database,
     user_id: u64,
-    form_id: u64,
-    password: Option<&str>
-) -> crate::Result<String> {
-    db.form_get(user_id, form_id, password)
+    form_id: u64
+) -> crate::Result<(String, String, Vec<u8>)> {
+    db.form_type_get(user_id, form_id)
 }

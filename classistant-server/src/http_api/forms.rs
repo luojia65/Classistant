@@ -48,11 +48,6 @@ pub fn create(
     }
 }
 
-#[derive(Deserialize)]
-pub struct GetRequest {
-    password: Option<String>,
-}
-
 #[derive(Serialize, Default)]
 pub struct GetResponse {
     content: HashMap<String, String>,
@@ -61,17 +56,14 @@ pub struct GetResponse {
 pub fn get(
     id: Identity,
     db: web::Data<Database>,
-    path: web::Path<(u64,)>,
-    params: web::Json<GetRequest>
+    path: web::Path<(u64,)>
 ) -> HttpResponse {
     let form_id = path.0;
     let user_id = identity_user_id!(id);
-    let password = params.password.as_ref().map(|s| s.as_str());
-    match app_api::api_191103::form_get(
+    match app_api::api_191103::form_type_get(
         &db, 
         user_id,
-        form_id,
-        password
+        form_id
     ) {
         Ok(content) => {
             HttpResponse::Ok().json(GetResponse {

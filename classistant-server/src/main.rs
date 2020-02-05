@@ -15,6 +15,7 @@ mod macros;
 mod auth_hash;
 mod identity;
 mod group;
+mod perm;
 
 mod site_config;
 mod db;

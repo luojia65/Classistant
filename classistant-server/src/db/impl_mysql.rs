@@ -189,12 +189,27 @@ impl MySQLDb {
         Ok(form_id)
     }
 
-    pub fn form_get(
+    pub fn form_type_get(
         &self,
         user_id: u64,
         form_id: u64,
-        password: Option<&str>
-    ) -> crate::Result<String> {
+    ) -> crate::Result<(String, String, Vec<u8>)> {
+        let mut conn = self.pool.get_conn()?;
+        let mut stmt = conn.prepare("CALL PFormTypeGet(?)")?;
+        let mut ans_iter = stmt.execute((form_id, ))?;
+        let ans = if let Some(ans) = ans_iter.next() { ans } 
+        else { return Err(crate::Error::EmptyResponse) }?;
+        let perm: String = if let Some(ans) = ans.get("perm") { ans }
+        else { return Err(crate::Error::FieldNotFound) };
+        if crate::perm::check_perm_user(&perm, user_id)? {
+            let content: String = if let Some(ans) = ans.get("content") { ans }
+            else { return Err(crate::Error::FieldNotFound) };
+            let class: String = if let Some(ans) = ans.get("class") { ans }
+            else { return Err(crate::Error::FieldNotFound) };
+            let extra: Vec<u8> = if let Some(ans) = ans.get("extra") { ans }
+            else { return Err(crate::Error::FieldNotFound) };
+            return Ok((content, class, extra))
+        }
         todo!()
     }
 }

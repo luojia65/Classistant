@@ -161,6 +161,16 @@ BEGIN
 	END IF;
 END;
 
+DROP PROCEDURE IF EXISTS `PGroupGetByUser`;
+
+CREATE PROCEDURE `PGroupGetByUser`(
+    IN `_user_id` INT
+)
+BEGIN
+    SELECT `group_id`, `priv` FROM `DGroupMember`
+    WHERE `user_id` = `_user_id`;
+END;
+
 CREATE TABLE `DDataUser` (
     `user_id` int(11) NOT NULL,
     `type_id` binary(16) NOT NULL,
@@ -234,4 +244,12 @@ BEGIN
     INSERT INTO `DFormType` (`perm`, `content`, `class`, `extra`)
     VALUES (`_perm`, `_content`, `_class`, `_extra`);
     SELECT last_insert_id() as `form_id`;
+END;
+
+DROP PROCEDURE IF EXISTS `PFormTypeGet` (
+    IN `_form_id` int(16),
+)
+BEGIN 
+    SELECT `perm`, `content`, `class`, `extra` FROM `DFormType`
+    WHERE `form_id` = `_form_id`;
 END;

@@ -131,14 +131,13 @@ impl Database {
         }
     }
 
-    pub fn form_get(
+    pub fn form_type_get(
         &self,
         user_id: u64,
         form_id: u64,
-        password: Option<&str>
-    ) -> crate::Result<String> {
+    ) -> crate::Result<(String, String, Vec<u8>)> {
         if let Database::MySQL(db) = &self {
-            db.form_get(user_id, form_id, password)
+            db.form_type_get(user_id, form_id)
         } else {
             unreachable!()
         }
