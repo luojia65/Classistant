@@ -22,6 +22,7 @@ import { makeStyles } from "@material-ui/core";
 import Chart from "../component/Chart";
 import Informations from "../component/Information";
 import AddGroup from "../component/AddGroup";
+import GroupInfo from "../component/GroupInfo";
 // import Deposits from "./Deposits";
 // import Orders from "./Orders";
 
@@ -201,6 +202,11 @@ export default function Dashboard() {
             <Grid item xs={12}>
               <Paper className={classes.paper}>
                 <AddGroup></AddGroup>
+              </Paper>
+            </Grid>
+            <Grid item xs={8}>
+              <Paper className={classes.paper}>
+                <GroupInfo></GroupInfo>
               </Paper>
             </Grid>
           </Grid>
