@@ -23,6 +23,7 @@ import Chart from "../component/Chart";
 import Informations from "../component/Information";
 import AddGroup from "../component/AddGroup";
 import GroupInfo from "../component/GroupInfo";
+import GroupPage from "../component/GroupPage";
 // import Deposits from "./Deposits";
 // import Orders from "./Orders";
 
@@ -206,7 +207,13 @@ export default function Dashboard() {
             </Grid>
             <Grid item xs={8}>
               <Paper className={classes.paper}>
-                <GroupInfo></GroupInfo>
+                <GroupInfo ></GroupInfo>
+              </Paper>
+            </Grid>
+            {/*整页大小*/}
+            <Grid item xs={12}>
+              <Paper className={classes.paper}>
+                <GroupPage id={1}></GroupPage>
               </Paper>
             </Grid>
           </Grid>

@@ -25,7 +25,10 @@ const useStyles = makeStyles(theme => ({
         }
     }))
 ;
-export default function GroupInfo() {
+
+let members:string[] = ["Alex A","Bob B","Cindy C","Dick D","Eric E"];
+
+export default function GroupInfo(data:Object) {
     const classes = useStyles();
     return (
         <Container>
@@ -48,21 +51,7 @@ export default function GroupInfo() {
                         </Grid>
                         <Grid item xs={12} className={classes.section2}>
                             <AvatarGroup spacing="small">
-                                <Avatar className={classes.memberAva} alt="Alex A"/>
-                                <Avatar className={classes.memberAva} alt="Bob B"/>
-                                <Avatar className={classes.memberAva} alt="Cindy C"/>
-                                <Avatar className={classes.memberAva} alt="Dick D"/>
-                                <Avatar className={classes.memberAva} alt="Eric E"/>
-                                <Avatar className={classes.memberAva} alt="Frank F"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva} alt="Grey G"/>
-                                <Avatar className={classes.memberAva}> +30</Avatar>
+                                {members.map((i)=><Avatar className={classes.memberAva} alt={i}/>)}
                             </AvatarGroup>
                         </Grid>
                     </Grid>
